@@ -30,6 +30,19 @@ msg_list = ['',
 
 # Poke PLC for L_ModuleSts and make alarms for those modules
 
+
+# get names of each sheet in workbook and put in list
+def get_sheet_names(excel_book):
+    sheet_list = []
+
+    # PlantPAX AOI's have an _ for second character
+    for sheet in excel_book.sheetnames:
+        sheet_list.append(sheet)
+
+    return sheet_list
+
+
+
 def main():
 
     # default filename of template file included in the repo
@@ -68,9 +81,13 @@ def main():
         print('Unable to connect to PLC at ' + commpath)
         exit()
 
-    # if the shortcut was left blank, create it
+    # if the shortcut was left blank, create it and spit out a default message
     if device_shortcut == '':
         device_shortcut = '/::[' + plc_name + ']'
+
+        print('No FTView device shortcut specified. Using PLC name. Path is: ' + device_shortcut)
+
+    
 
     # open excel file
 
@@ -85,3 +102,11 @@ def main():
         exit()
     
     print('Opened file named ' + template_excelfile)
+
+    sheet_list = get_sheet_names(book)
+
+    print(sheet_list)
+
+
+if __name__ == "__main__":
+    main()
