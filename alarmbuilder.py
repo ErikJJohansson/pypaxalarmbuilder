@@ -47,7 +47,7 @@ FTAE_DEFAULT_POLL_INDEX = 4 # 2 seconds
 FTAE_AOI_CONFIG = {
     "P_AIChan": {
         "Alarms":{
-            "Fail": 'Channel Input Input bad or uncertain.  Val_InpRaw=/*S:0%Tag1*/; Val=/*S:0%Tag2*/;'
+            "Fail": 'Channel Input bad or uncertain.  Val_InpRaw=/*S:0%Tag1*/; Val=/*S:0%Tag2*/;'
         },
         "Msg_Params":{"Tag1":"Val_InpRaw","Tag2":"Val"},
     },
@@ -60,13 +60,27 @@ FTAE_AOI_CONFIG = {
             "LoLo": 'Low-Low Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;'
         },
         "Msg_Params":{"Tag1":"Val","Tag2":"Inp_PV"},
+        
+    },
+    "P_AInDual": {
+        "Alarms":{
+            "Fail": 'Analog Input bad or uncertain.  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "HiHi": 'High-High Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Hi": 'High Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Lo": 'Low Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "LoLo": 'Low-Low Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Diff": 'PVA and PVB Differential Limit Exceeded; Val_Diff=/*N:5 %Tag3 NOFILL DP:0*/',
+            "NoneGood": 'PVA and PVB Both Bad Quality;  Val_PVA=/*N:5 %Tag3 NOFILL DP:1*/; Val_PVB=/*N:5 %Tag4 NOFILL DP:1*/;',
+            "OneGood": 'PVA and PVB One Bad Quality;  Val_PVA=/*N:5 %Tag3 NOFILL DP:1*/; Val_PVB=/*N:5 %Tag4 NOFILL DP:1*/;'
+        },
+        "Msg_Params":{"Tag1":"Val","Tag2":"Val_Diff","Tag3":"Val_PVA","Tag4":"Val_PVB"},
     },
     "P_AOut": {
         "Alarms":{
             "IOFault": 'IO Fault',
             "IntlkTrip": 'Interlock Trip',
         },
-        "Msg_Params":{"Tag1":"Val","Tag2":"Inp_PV"},
+        "Msg_Params":{},
     },
     'P_ValveMO': {
         "Alarms":{
