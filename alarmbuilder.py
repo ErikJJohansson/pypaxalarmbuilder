@@ -1,10 +1,10 @@
 from pycomm3 import LogixDriver
 from sys import argv
-import openpyxl
 from tqdm import trange, tqdm
 from itertools import product
 import argparse
 import xml.etree.ElementTree as ET
+import re
 
 # Input parameters, PLC IP address, Device Shortcut (/::[Pilot]) etc.
 
@@ -37,6 +37,9 @@ FTAE_GROUP_ID = 1   # hardcoded for now, will change to use input
 
 FTAE_SHELVE_MAX_VALUE = 480
 
+# Hardcoded
+FTAE_POLL_GROUPS = ["0.10", "0.25", "0.50", "1","2","5","10","20","30","60","120"]
+
 # Define AOI tags and their respective update rates 
 FTAE_AOI_ALARMS = {
     'P_AIn': ["Fail","HiHi","Hi","Lo","LoLo"],
@@ -46,11 +49,36 @@ FTAE_AOI_ALARMS = {
 
 }  
 
+# maybe dont use the keys but the values as a list to add to the tag poll groups??
 FTAE_AOI_PARAMS = {
     "P_AIn": {"Tag1":"Val"},
     "P_AIChan": {"Tag1":"Val"},
+    "P_AInAdv"
     "P_ValveSO": {"Tag1":"Val"},
     "P_DIn": {"Tag1":"Val"}
+}
+
+FTAE_AOI_CONFIG = {
+    "P_AIn": {
+        "Alarms":["Fail","HiHi","Hi","Lo","LoLo"],
+        "Msg_Params":{"Tag1":"Val"},
+    },
+    "P_AIChan": {
+        "Alarms":["Fail"],
+        "Msg_Params":{"Tag1":"Val"},
+    },
+    'P_ValveSO': {
+        "Alarms":["IOFault","IntlkTrip","OffFail","OnFail"],
+        "Msg_Params":{"Tag1":"Val"},
+    },
+    'P_DIn': {
+        "Alarms":["IOFault","TgtDisagree"],
+        "Msg_Params":{"Tag1":"Inp_PV","Tag2":"Inp_Target"},
+    },
+    'P_DOut': {
+        "Alarms":["IOFault","IntlkTrip","OffFail","OnFail"],
+        "Msg_Params":{"Tag1":"Val_Cmd","Tag2":"Val_Fdbk"},
+    }
 }
 
 
@@ -71,6 +99,58 @@ FTAE_P_ALARM_TAGS = ['Com_AE.1','Com_AE.4','Com_AE.5','Com_AE.7','Com_AE.8','Com
 
 
 # Poke PLC for L_ModuleSts and make alarms for those modules
+
+
+def get_program_name_for_tag(tag):
+    name = tag.split(':')[0]
+
+    # PLC becomes group name, ID ranges from 1 to 9, max 9 PLC's per FTAE
+    # groupID for each program is X01-X99 where X is the PLC group ID
+    # add groupID for program to dictionary of program names
+    # add index element to each progrm name group ID
+    # messages start at X0YY0000 where XX is group ID
+    # YY is program number, max 99 programs per PLC
+
+    # Controller scope tag message index starts at 101, to 9999
+    # Program Scope tag message index starts at 10001, to 19999
+    # Message ID can range between 1-2147483647
+
+
+# made this to keep track of indexes for alarms and whatnot
+def create_alarmgroup_database(groupID, plc_program_list):
+    '''
+    function to create a database of alarm groups
+    '''
+    alarm_dict = {}
+
+    # index 0 is for controller scoped tags
+    alarm_dict['Controller'] = {}
+    alarm_dict['Controller']['groupID'] = str(groupID)
+    alarm_dict['Controller']['msg_index'] = str(groupID*10000000 + 1)
+    alarm_dict['Controller']['parentID'] = '0'
+
+
+
+    for i, program in enumerate(plc_program_list):
+        alarm_dict[program] = {}
+        alarm_dict[program]['groupID'] = str((groupID*100) + (i+1))
+        alarm_dict[program]['msg_index'] = str((groupID*10000000) + (i+1)*10000 + 1)
+        alarm_dict[program]['parentID'] = str(groupID)
+
+    return alarm_dict
+
+
+def write_alarmgroups(ET, parent, group_id, group_name):
+    pass
+
+def write_msg(ET,parent,msg_id,msg_text):
+    message = ET.SubElement(parent, "Message", attrib={"id": str(msg_id)})
+    message.tail = "\n"
+    msgs = ET.SubElement(message, "Msgs")
+    msgs.tail = "\n"
+    msg_txt = ET.SubElement(msgs, "Msg", attrib={"xml:lang": "en-US"})
+    msg_txt.text = msg_text
+    msg_txt.tail = "\n"
 
 # make a  function so its easier to read
 def write_alarm(ET,parent,aoi_type,aoi_instance,alarm_tag,device_shortcut, group_id,message_id,param_list):
@@ -191,15 +271,14 @@ def write_alarm(ET,parent,aoi_type,aoi_instance,alarm_tag,device_shortcut, group
         param.text = device_shortcut + aoi_instance + '.' + param_list[param_name]
         param.tail = "\n"
 
-# get names of each sheet in workbook and put in list
-def get_sheet_names(excel_book):
-    sheet_list = []
+def get_shortcut_name(device_shortcut):
+    '''
+    function to get the name of the device shortcut
+    '''
 
-    # PlantPAX AOI's have an _ for second character
-    for sheet in excel_book.sheetnames:
-        sheet_list.append(sheet)
+    pattern = r'\[(.*?)\]'
 
-    return sheet_list
+    return re.search(pattern,device_shortcut)
 
 def get_aoi_tag_instances(plc, tag_type):
     """
@@ -243,12 +322,10 @@ def make_tag_list(base_tag,sub_tags):
     return read_list
 
 def main():
-
-    # default filename of template file included in the repo
-    template_excelfile = 'FTAE_AlarmExport.xlsx'
     
     # will be replaced with PLC name
     default_deviceshortcut = ''
+    default_groupID = 1
 
     # Parse arguments
    
@@ -259,12 +336,14 @@ def main():
     # Add command-line arguments
     parser.add_argument('commpath', help='Path to PLC')
     parser.add_argument('deviceshortcut', nargs='?', default=default_deviceshortcut,help='Shortcut in FTView')
+    parser.add_argument('groupID', nargs='?', default=default_groupID,help='PLC Group ID for alarms 1-9')
                                        
     args = parser.parse_args()
 
     # Access the parsed arguments
     commpath = args.commpath
     device_shortcut = args.deviceshortcut
+    groupID = args.groupID
 
     # open connection to PLC
 
@@ -285,7 +364,31 @@ def main():
         device_shortcut = '/::[' + plc_name + ']'
 
         print('No FTView device shortcut specified. Using PLC name. Path is: ' + device_shortcut)
+
+    # get list of programs, this will be used to separate into different alarm groups
+    plc_program_list = plc.info['programs'].keys()
+
+    plc_shortcut_name = get_shortcut_name(device_shortcut)
     
+    # create alarm group database
+    alarm_group_db = create_alarmgroup_database(groupID,plc_program_list)
+
+    print(alarm_group_db)
+
+    exit()
+
+    # PLC becomes group name, ID ranges from 1 to 9, max 9 PLC's per FTAE
+    # groupID for each program is X01-X99 where X is the PLC group ID
+    # add groupID for program to dictionary of program names
+    # add index element to each progrm name group ID
+    # messages start at X0YY0000 where XX is group ID
+    # YY is program number, max 99 programs per PLC
+
+    # Controller scope tag message index starts at 101, to 9999
+    # Program Scope tag message index starts at 10001, to 19999
+    # Message ID can range between 1-2147483647
+
+
     # create version element and append it to the root
     version = ET.SubElement(FTAE_XML_ROOT, "Version")
     version.text = FTAE_XML_VERSION
@@ -313,8 +416,7 @@ def main():
     setdapollgroups_operation.text = "SetDAPollGroups"
     setdapollgroups_operation.tail = "\n"
 
-    # Hardcoded
-    FTAE_POLL_GROUPS = ["0.10", "0.25", "0.50", "1","2","5","10","20","30","60","120"]
+
 
     pollgroups = ET.SubElement(setdapollgroups_command, "PollGroups")
     pollgroups.tail = "\n"
@@ -341,6 +443,7 @@ def main():
         # skip first element
         # honestly wtf rockwell what is this structure
         if i > 0:
+            '''
             message = ET.SubElement(messages, "Message", attrib={"id": str(i)})
             message.tail = "\n"
             msgs = ET.SubElement(message, "Msgs")
@@ -348,6 +451,8 @@ def main():
             msg_txt = ET.SubElement(msgs, "Msg", attrib={"xml:lang": "en-US"})
             msg_txt.text = msg
             msg_txt.tail = "\n"
+            '''
+            write_msg(ET,messages,i,msg)
 
     # write alarm groups structure
     writealarmgroups_command = ET.SubElement(commands, FTAE_DETECTOR_COMMAND,attrib={"style": "FTAeDefaultDetector", "version": FTAE_XML_VERSION})
@@ -358,7 +463,7 @@ def main():
     alarmgroups = ET.SubElement(writealarmgroups_command, "Groups")
     alarmgroups.tail = "\n"
 
-    alarmgroup = ET.SubElement(alarmgroups, "Group", attrib={"id": str(FTAE_GROUP_ID),"parentID":"0"}) # maybe pass an input? requres user to know what group they are in
+    alarmgroup = ET.SubElement(alarmgroups, "Group", attrib={"id": str(groupID),"parentID":"0"}) # maybe pass an input? requres user to know what group they are in
     alarmgroup.text = plc_name
     alarmgroup.tail = "\n"
 
@@ -374,23 +479,34 @@ def main():
     alarmelements.tail = "\n"
 
     # loop through each AOI type and write to xml
-    for aoi_type in FTAE_AOI_ALARMS.keys():
+    for aoi_type in FTAE_AOI_CONFIG.keys():
 
         # get list of tags for each AOI typ
         aoi_instance_list = get_aoi_tag_instances(plc, aoi_type)
 
         # get list of alarm tags for each AOI type
-        aoi_alarm_tags = FTAE_AOI_ALARMS[aoi_type]
+        aoi_alarm_tags = FTAE_AOI_CONFIG[aoi_type]['Alarms']
 
         # loop through each instance of the AOI type
         for aoi_instance in aoi_instance_list:
             
+            # get the P&ID tag and description from PLC
+            # this is used to help make the messages for the alarms
+
+            aoi_cfg_tag = plc.read(aoi_instance + '.Cfg_Tag')[1]
+            aoi_cfg_desc = plc.read(aoi_instance + '.Cfg_Desc')[1]
+
+
+
+            # maybe makes things easier to read
+            aoi_msg_start = aoi_cfg_tag + ' - ' + aoi_cfg_desc + ' - '
+
 
             # loop through each alarm in list for the instance type
             for alarm_tag in aoi_alarm_tags:
                 
                 # ADD THE ALARM
-                write_alarm(ET,alarmelements,aoi_type,aoi_instance,alarm_tag,device_shortcut,FTAE_GROUP_ID,1,FTAE_AOI_PARAMS[aoi_type])
+                write_alarm(ET,alarmelements,aoi_type,aoi_instance,alarm_tag,device_shortcut,FTAE_GROUP_ID,1,FTAE_AOI_CONFIG[aoi_type]['Msg_Params'])
                 
                 # create tag path
                 alarm_tag_and_elements = make_tag_list(alarm_tag,FTAE_P_ALARM_TAGS)
