@@ -61,6 +61,31 @@ FTAE_AOI_CONFIG = {
         },
         "Msg_Params":{"Tag1":"Val","Tag2":"Inp_PV"},
     },
+    "P_AOut": {
+        "Alarms":{
+            "IOFault": 'IO Fault',
+            "IntlkTrip": 'Interlock Trip',
+        },
+        "Msg_Params":{"Tag1":"Val","Tag2":"Inp_PV"},
+    },
+    'P_ValveMO': {
+        "Alarms":{
+            "ActuatorFault": 'Actuator fault.  Val_Fault=/*S:0%Tag1*/;',
+            "FullStall": 'Full Stall - Valve did not move',
+            "IOFault": 'IO Fault',
+            "IntlkTrip": 'Interlock Trip',
+            "TransitStall": 'Transit Stall - Valve did not move to target position',
+        },
+        "Msg_Params":{"Tag1":"Val_Fault"},
+    },
+    'P_ValveC': {
+        "Alarms":{
+            "ActuatorFault": 'Actuator fault.  Val_Fault=/*S:0%Tag1*/;',
+            "IOFault": 'IO Fault',
+            "IntlkTrip": 'Interlock Trip',
+        },
+        "Msg_Params":{"Tag1":"Val_Fault"},
+    },
     'P_ValveSO': {
         "Alarms":{
             "FullStall": 'Full Stall - Valve did not move',
@@ -97,6 +122,43 @@ FTAE_AOI_CONFIG = {
         },
         "Msg_Params":{"Tag1":"Val_PV","Tag2":"Val_SP","Tag3":"Val_Fault"},
     },
+    'P_Motor': {
+        "Alarms":{
+            "FailToStart": 'Fail to start',
+            "FailToStop": 'Fail to stop',
+            "IOFault": 'IO Fault',
+            "IntlkTrip": 'Interlock Trip',
+        },
+        "Msg_Params":{},
+    },
+    'P_PF755': {
+        "Alarms":{
+            "DriveFault": 'Drive Fault',
+            "FailToStart": 'Fail to start',
+            "FailToStop": 'Fail to stop',
+            "IOFault": 'IO Fault',
+            "IntlkTrip": 'Interlock Trip',
+        },
+        "Msg_Params":{},
+    },
+    'P_VSD': {
+        "Alarms":{
+            "DriveFault": 'Drive Fault',
+            "FailToStart": 'Fail to start',
+            "FailToStop": 'Fail to stop',
+            "IOFault": 'IO Fault',
+            "IntlkTrip": 'Interlock Trip',
+        },
+        "Msg_Params":{},
+    },
+    'P_LLS': {
+        "Alarms":{
+            "CantStart": 'Cannot start. No motors available to start',
+            "CantStop": 'Cannot stop. No motors available to stop',
+            "IntlkTrip": 'Interlock Trip',
+        },
+        "Msg_Params":{},
+    }, 
 }
 
 
