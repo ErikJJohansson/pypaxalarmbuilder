@@ -40,45 +40,63 @@ FTAE_SHELVE_MAX_VALUE = 480
 # Hardcoded
 FTAE_POLL_GROUPS = ["0.10", "0.25", "0.50", "1","2","5","10","20","30","60","120"]
 
-# Define AOI tags and their respective update rates 
-FTAE_AOI_ALARMS = {
-    'P_AIn': ["Fail","HiHi","Hi","Lo","LoLo"],
-    'P_AIChan': ["Fail"],
-    'P_ValveSO': ["IOFault","IntlkTrip","OffFail","OnFail"],
-    'P_DIn': ["IOFault","TgtDisagree"],
+FTAE_DEFAULT_POLL_INDEX = 4 # 2 seconds
 
-}  
-
-# maybe dont use the keys but the values as a list to add to the tag poll groups??
-FTAE_AOI_PARAMS = {
-    "P_AIn": {"Tag1":"Val"},
-    "P_AIChan": {"Tag1":"Val"},
-    "P_AInAdv"
-    "P_ValveSO": {"Tag1":"Val"},
-    "P_DIn": {"Tag1":"Val"}
-}
+# Define AOI configuration and messages
 
 FTAE_AOI_CONFIG = {
-    "P_AIn": {
-        "Alarms":["Fail","HiHi","Hi","Lo","LoLo"],
-        "Msg_Params":{"Tag1":"Val"},
-    },
     "P_AIChan": {
-        "Alarms":["Fail"],
-        "Msg_Params":{"Tag1":"Val"},
+        "Alarms":{
+            "Fail": 'Channel Input Input bad or uncertain.  Val_InpRaw=/*S:0%Tag1*/; Val=/*S:0%Tag2*/;'
+        },
+        "Msg_Params":{"Tag1":"Val_InpRaw","Tag2":"Val"},
+    },
+    "P_AIn": {
+        "Alarms":{
+            "Fail": 'Input bad or uncertain.  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "HiHi": 'High-High Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Hi": 'High Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Lo": 'Low Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "LoLo": 'Low-Low Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;'
+        },
+        "Msg_Params":{"Tag1":"Val","Tag2":"Inp_PV"},
     },
     'P_ValveSO': {
-        "Alarms":["IOFault","IntlkTrip","OffFail","OnFail"],
-        "Msg_Params":{"Tag1":"Val"},
+        "Alarms":{
+            "FullStall": 'Full Stall - Valve did not move',
+            "IOFault": 'IO Fault',
+            "IntlkTrip": 'Interlock Trip',
+            "TransitStall": 'Transit Stall - Valve did not move to target position',
+        },
+        "Msg_Params":{},
     },
     'P_DIn': {
-        "Alarms":["IOFault","TgtDisagree"],
+        "Alarms":{
+            "IOFault": 'IO Fault',
+            "TgtDisagree": 'Target Disagree: - PV Does Not Match Target;  Inp_PV=/*S:0%Tag1*/;  Inp_Target=/*S:0%Tag2*/;'
+        },
         "Msg_Params":{"Tag1":"Inp_PV","Tag2":"Inp_Target"},
     },
     'P_DOut': {
-        "Alarms":["IOFault","IntlkTrip","OffFail","OnFail"],
+        "Alarms":{
+            "IOFault": 'IO Fault',
+            "IntlkTrip": 'Interlock Trip',
+            "OffFail": 'Device feedback does not confirm the device is OFF within the configured time.  Val_Cmd=/*S:0%Tag1*/; Val_Fdbk=/*S:0%Tag2*/;',
+            "OnFail": 'Device feedback does not confirm the device is ON within the configured time.  Val_Cmd=/*S:0%Tag1*/; Val_Fdbk=/*S:0%Tag2*/;'
+        },
         "Msg_Params":{"Tag1":"Val_Cmd","Tag2":"Val_Fdbk"},
-    }
+    },
+    'P_PIDE': {
+        "Alarms":{
+            "Fail": 'PIDE instruction has a fault.   Val_PV=/*S:0%Tag1*/; Val_SP=/*S:0%Tag2*/; Val_Fault=/*S:0%Tag3*/;',
+            "HiDev": 'High deviation alarm.  Val_PV=/*S:0%Tag1*/; Val_SP=/*S:0%Tag2*/;',
+            "HiHiDev": 'High-high deviation alarm.   Val_PV=/*S:0%Tag1*/; Val_SP=/*S:0%Tag2*/;',
+            "IntlkTrip": 'Interlock Trip',
+            "LoDev": 'Low deviation alarm.  Val_PV=/*S:0%Tag1*/; Val_SP=/*S:0%Tag2*/;',
+            "LoLoDev": 'Low-Low Deviation Alarm.   Val_PV=/*S:0%Tag1*/; Val_SP=/*S:0%Tag2*/;'
+        },
+        "Msg_Params":{"Tag1":"Val_PV","Tag2":"Val_SP","Tag3":"Val_Fault"},
+    },
 }
 
 
@@ -100,9 +118,16 @@ FTAE_P_ALARM_TAGS = ['Com_AE.1','Com_AE.4','Com_AE.5','Com_AE.7','Com_AE.8','Com
 
 # Poke PLC for L_ModuleSts and make alarms for those modules
 
-
+# check if tag is program tag
 def get_program_name_for_tag(tag):
-    name = tag.split(':')[0]
+    substring = 'Program:'
+
+    index = tag.find(substring)
+
+    if index != -1:
+        return tag[index + len(substring):]
+    else:
+        return ''
 
     # PLC becomes group name, ID ranges from 1 to 9, max 9 PLC's per FTAE
     # groupID for each program is X01-X99 where X is the PLC group ID
@@ -117,31 +142,33 @@ def get_program_name_for_tag(tag):
 
 
 # made this to keep track of indexes for alarms and whatnot
-def create_alarmgroup_database(groupID, plc_program_list):
+def create_alarmgroup_database(plc_groupID, plc_name, plc_program_list):
     '''
     function to create a database of alarm groups
     '''
     alarm_dict = {}
 
     # index 0 is for controller scoped tags
-    alarm_dict['Controller'] = {}
-    alarm_dict['Controller']['groupID'] = str(groupID)
-    alarm_dict['Controller']['msg_index'] = str(groupID*10000000 + 1)
-    alarm_dict['Controller']['parentID'] = '0'
-
-
+    alarm_dict[''] = {}
+    alarm_dict['']['groupID'] = str(plc_groupID)
+    alarm_dict['']['msg_index'] = str(plc_groupID*10000000 + 1)
+    alarm_dict['']['parentID'] = '0'
 
     for i, program in enumerate(plc_program_list):
         alarm_dict[program] = {}
-        alarm_dict[program]['groupID'] = str((groupID*100) + (i+1))
-        alarm_dict[program]['msg_index'] = str((groupID*10000000) + (i+1)*10000 + 1)
-        alarm_dict[program]['parentID'] = str(groupID)
+        alarm_dict[program]['groupID'] = str((plc_groupID*100) + (i+1))
+        alarm_dict[program]['msg_index'] = str((plc_groupID*10000000) + (i+1)*10000 + 1)
+        alarm_dict[program]['parentID'] = str(plc_groupID)
 
     return alarm_dict
 
 
-def write_alarmgroups(ET, parent, group_id, group_name):
-    pass
+def write_alarmgroups(ET, parent, alarm_dict):
+
+    for key in alarm_dict.keys():
+        alarmgroup = ET.SubElement(parent, "Group", attrib={"id": alarm_dict[key]['groupID'],"parentID":alarm_dict[key]['parentID']})
+        alarmgroup.text = key
+        alarmgroup.tail = "\n"
 
 def write_msg(ET,parent,msg_id,msg_text):
     message = ET.SubElement(parent, "Message", attrib={"id": str(msg_id)})
@@ -184,7 +211,17 @@ def write_alarm(ET,parent,aoi_type,aoi_instance,alarm_tag,device_shortcut, group
     userdata.tail = "\n"
 
     rsvcmd = ET.SubElement(discreteelement, "RSVCmd")
-    rsvcmd.text = "AE_DisplayQuick " + device_shortcut + aoi_instance + " " + device_shortcut
+    if aoi_type == "P_Alarm":
+        if aoi_instance.startswith('Program:'):
+            rsvcmd.text = "AE_DisplayP_AlarmFaceplate " + device_shortcut + aoi_instance + " " + device_shortcut + aoi_instance.split('.')[0] + '. ' + device_shortcut + aoi_instance + '.Cfg_Cond' 
+        else:
+            rsvcmd.text = "AE_DisplayP_AlarmFaceplate " + device_shortcut + aoi_instance + " " + device_shortcut + ' ' + device_shortcut + aoi_instance + '.Cfg_Cond'
+    else:
+        if aoi_instance.startswith('Program:'):
+            rsvcmd.text = "AE_DisplayQuick " + device_shortcut + aoi_instance + " " + device_shortcut + aoi_instance.split('.')[0] + '.'
+        else:
+            rsvcmd.text = "AE_DisplayQuick " + device_shortcut + aoi_instance + " " + device_shortcut
+        
     rsvcmd.tail = "\n"
 
     alarmclass = ET.SubElement(discreteelement, "AlarmClass")
@@ -335,15 +372,16 @@ def main():
     
     # Add command-line arguments
     parser.add_argument('commpath', help='Path to PLC')
-    parser.add_argument('deviceshortcut', nargs='?', default=default_deviceshortcut,help='Shortcut in FTView')
     parser.add_argument('groupID', nargs='?', default=default_groupID,help='PLC Group ID for alarms 1-9')
+    parser.add_argument('deviceshortcut', nargs='?', default=default_deviceshortcut,help='Shortcut in FTView')
+
                                        
     args = parser.parse_args()
 
     # Access the parsed arguments
     commpath = args.commpath
     device_shortcut = args.deviceshortcut
-    groupID = args.groupID
+    plc_groupID = int(args.groupID)
 
     # open connection to PLC
 
@@ -370,25 +408,11 @@ def main():
 
     plc_shortcut_name = get_shortcut_name(device_shortcut)
     
+    print('Generating alarm group database')
     # create alarm group database
-    alarm_group_db = create_alarmgroup_database(groupID,plc_program_list)
+    alarm_group_db = create_alarmgroup_database(plc_groupID,plc_name,plc_program_list)
 
-    print(alarm_group_db)
-
-    exit()
-
-    # PLC becomes group name, ID ranges from 1 to 9, max 9 PLC's per FTAE
-    # groupID for each program is X01-X99 where X is the PLC group ID
-    # add groupID for program to dictionary of program names
-    # add index element to each progrm name group ID
-    # messages start at X0YY0000 where XX is group ID
-    # YY is program number, max 99 programs per PLC
-
-    # Controller scope tag message index starts at 101, to 9999
-    # Program Scope tag message index starts at 10001, to 19999
-    # Message ID can range between 1-2147483647
-
-
+    print('Generating FTAE XML file')
     # create version element and append it to the root
     version = ET.SubElement(FTAE_XML_ROOT, "Version")
     version.text = FTAE_XML_VERSION
@@ -437,35 +461,14 @@ def main():
     messages = ET.SubElement(writemsgs_command, "Messages")
     messages.tail = "\n"
 
-    # loop through list of messages and write to xml
-    for i,msg in enumerate(FTAE_MSG_LIST):
-        
-        # skip first element
-        # honestly wtf rockwell what is this structure
-        if i > 0:
-            '''
-            message = ET.SubElement(messages, "Message", attrib={"id": str(i)})
-            message.tail = "\n"
-            msgs = ET.SubElement(message, "Msgs")
-            msgs.tail = "\n"
-            msg_txt = ET.SubElement(msgs, "Msg", attrib={"xml:lang": "en-US"})
-            msg_txt.text = msg
-            msg_txt.tail = "\n"
-            '''
-            write_msg(ET,messages,i,msg)
-
     # write alarm groups structure
     writealarmgroups_command = ET.SubElement(commands, FTAE_DETECTOR_COMMAND,attrib={"style": "FTAeDefaultDetector", "version": FTAE_XML_VERSION})
     writealarmgroups_command.tail = "\n"
     writealarmgroups_operation = ET.SubElement(writealarmgroups_command, "Operation")
     writealarmgroups_operation.text = "WriteAlarmGroups"
 
-    alarmgroups = ET.SubElement(writealarmgroups_command, "Groups")
-    alarmgroups.tail = "\n"
-
-    alarmgroup = ET.SubElement(alarmgroups, "Group", attrib={"id": str(groupID),"parentID":"0"}) # maybe pass an input? requres user to know what group they are in
-    alarmgroup.text = plc_name
-    alarmgroup.tail = "\n"
+    # write alarm groups to xml based on the database
+    write_alarmgroups(ET,writealarmgroups_command,alarm_group_db)
 
     # structure for alarms
     writeconfig_command = ET.SubElement(commands, FTAE_DETECTOR_COMMAND,attrib={"style": "FTAeDefaultDetector", "version": FTAE_XML_VERSION})
@@ -496,35 +499,56 @@ def main():
             aoi_cfg_tag = plc.read(aoi_instance + '.Cfg_Tag')[1]
             aoi_cfg_desc = plc.read(aoi_instance + '.Cfg_Desc')[1]
 
-
+            # check if tag is program tag
+            aoi_program_name = get_program_name_for_tag(aoi_instance)
 
             # maybe makes things easier to read
-            aoi_msg_start = aoi_cfg_tag + ' - ' + aoi_cfg_desc + ' - '
+            aoi_msg_start = plc_name + ' - ' + aoi_cfg_tag + ' - ' + aoi_cfg_desc + ' - '
 
+            # add parameters for alarm tags to tag list
+            alarm_tag_parameters = make_tag_list(aoi_instance,FTAE_AOI_CONFIG[aoi_type]['Msg_Params'].values())
+
+
+            for tag in alarm_tag_parameters:
+                # add P_Alarm tags to poll group
+                alm_tag_parameter = ET.SubElement(pollgrouptags_rate[FTAE_DEFAULT_POLL_INDEX],"Tag")
+                alm_tag_parameter.text = device_shortcut + tag
+                alm_tag_parameter.tail = "\n"
 
             # loop through each alarm in list for the instance type
             for alarm_tag in aoi_alarm_tags:
                 
-                # ADD THE ALARM
-                write_alarm(ET,alarmelements,aoi_type,aoi_instance,alarm_tag,device_shortcut,FTAE_GROUP_ID,1,FTAE_AOI_CONFIG[aoi_type]['Msg_Params'])
+                alarm_message_index = alarm_group_db[aoi_program_name]['msg_index']
+
+                # add alarm message to messages
+                write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE_AOI_CONFIG[aoi_type]['Alarms'][alarm_tag])
+
+                # add alarm to alarms
+                write_alarm(ET,alarmelements,aoi_type,aoi_instance,alarm_tag,device_shortcut,plc_groupID,alarm_message_index,FTAE_AOI_CONFIG[aoi_type]['Msg_Params'])
                 
+                # add alarm tags to tags
+
                 # create tag path
                 alarm_tag_and_elements = make_tag_list(alarm_tag,FTAE_P_ALARM_TAGS)
 
                 # add alarm tag to poll group
-                alm_tag = ET.SubElement(pollgrouptags_rate[4],"Tag")
+                alm_tag = ET.SubElement(pollgrouptags_rate[FTAE_DEFAULT_POLL_INDEX],"Tag")
                 alm_tag.text = device_shortcut + aoi_instance + '.Alm_' + alarm_tag
                 alm_tag.tail = "\n"
 
                 # add P_Alarm tags to poll group
                 for tag_name in alarm_tag_and_elements:
-                    tag = ET.SubElement(pollgrouptags_rate[4],"Tag")
+                    tag = ET.SubElement(pollgrouptags_rate[FTAE_DEFAULT_POLL_INDEX],"Tag")
                     tag.text = device_shortcut + aoi_instance + '.' + tag_name
                     tag.tail = "\n"
 
 
+                # update the message index
+                index_update = int(alarm_message_index) + 1
+                alarm_group_db[aoi_program_name]['msg_index'] = str(index_update)
 
 
+    print('Generation complete. Writing to file')
     # Create the XML tree
     tree = ET.ElementTree(FTAE_XML_ROOT)
 
@@ -535,6 +559,7 @@ def main():
 
     plc.close()
 
+    print('Done. File saved as ' + outfile + '. Exiting.')
 
 if __name__ == "__main__":
     main()
