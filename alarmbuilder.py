@@ -6,6 +6,20 @@ import argparse
 import xml.etree.ElementTree as ET
 import re
 import FTAE
+import xmlschema
+
+def validate_xml(xml_file, xsd_file):
+    schema = xmlschema.XMLSchema(xsd_file)
+    try:
+        schema.validate(xml_file)
+        print("XML is valid against XSD.")
+    except xmlschema.XMLSchemaValidationError as e:
+        print("XML is not valid against XSD:")
+        print(e)
+
+def replace_characters_with_underscore(input_string, characters):
+    pattern = '[' + re.escape(characters) + ']'
+    return re.sub(pattern, '_', input_string)
 
 # check if tag is program tag
 def get_program_name_for_tag(tag):
@@ -72,8 +86,11 @@ def create_alarmgroup_database(plc_groupID, plc_name, plc_program_list):
 # writes alarm groups based on alarm dictionary generated
 def write_alarmgroups(ET, parent, alarm_dict):
 
+    groups = ET.SubElement(parent, "Groups")
+    groups.tail = "\n"   
+
     for key in alarm_dict.keys():
-        alarmgroup = ET.SubElement(parent, "Group", attrib={"id": alarm_dict[key]['groupID'],"parentID":alarm_dict[key]['parentID']})
+        alarmgroup = ET.SubElement(groups, "Group", attrib={"id": alarm_dict[key]['groupID'],"parentID":alarm_dict[key]['parentID']})
         alarmgroup.text = key
         alarmgroup.tail = "\n"
 
@@ -87,11 +104,10 @@ def write_msg(ET,parent,msg_id,msg_text):
     msg_txt.tail = "\n"
 
 # P_Alarm has a different structure compared to AOI's with it embedded
-def write_alarm_p_alarm(ET,parent,aoi_instance,device_shortcut, group_id, message_id):
+def write_alarm_p_alarm(ET,parent,plc_name,aoi_instance,device_shortcut, group_id, message_id):
 
-    shortcut_name = get_shortcut_name(device_shortcut)
-    aoi_instance_formatted = aoi_instance.replace(':','_').replace('.','_') # no colons or .
-    alarmelementname = shortcut_name + '_' + aoi_instance_formatted + '_Alm'
+    aoi_instance_formatted = replace_characters_with_underscore(aoi_instance,':.[]')
+    alarmelementname = plc_name + '_' + aoi_instance_formatted + '_Alm'
 
     alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": alarmelementname,"inuse":"Yes","latched":"false","ackRequired":"true","style":"Discrete"})
     alarmelement.tail = "\n"
@@ -209,11 +225,10 @@ def write_alarm_p_alarm(ET,parent,aoi_instance,device_shortcut, group_id, messag
     parameters.tail = "\n"
 
 # make a  function so its easier to read
-def write_alarm(ET,parent,aoi_type,aoi_instance,alarm_tag,device_shortcut, group_id,message_id,param_list):
-    
-    shortcut_name = get_shortcut_name(device_shortcut)
-    aoi_instance_formatted = aoi_instance.replace(':','_').replace('.','_') # no colons or .
-    alarmelementname = shortcut_name + '_' + aoi_instance_formatted + '_Alm'
+def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,device_shortcut, group_id,message_id,param_list):
+
+    aoi_instance_formatted = replace_characters_with_underscore(aoi_instance,':.[]')
+    alarmelementname = plc_name + '_' + aoi_instance_formatted + '_' + alarm_tag + '_Alm'
 
     alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": alarmelementname,"inuse":"Yes","latched":"false","ackRequired":"true","style":"Discrete"})
     alarmelement.tail = "\n"
@@ -486,7 +501,7 @@ def main():
     writealarmgroups_command = ET.SubElement(commands, FTAE.DETECTOR_COMMAND,attrib={"style": "FTAeDefaultDetector", "version": FTAE.XML_VERSION})
     writealarmgroups_command.tail = "\n"
     writealarmgroups_operation = ET.SubElement(writealarmgroups_command, "Operation")
-    writealarmgroups_operation.text = "WriteAlarmGroups"
+    writealarmgroups_operation.text = "WriteAlarmGroup"
 
     # write alarm groups to xml based on the database
     write_alarmgroups(ET,writealarmgroups_command,alarm_group_db)
@@ -548,7 +563,7 @@ def main():
                 write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE.AOI_CONFIG[aoi_type]['Alarms'][''])
 
                 # add alarm to alarms
-                write_alarm_p_alarm(ET,alarmelements,aoi_instance,device_shortcut,alarm_groupID,alarm_message_index)
+                write_alarm_p_alarm(ET,alarmelements,plc_name,aoi_instance,device_shortcut,alarm_groupID,alarm_message_index)
                 # add alarm tags to tags
 
                 # create tag path
@@ -579,7 +594,7 @@ def main():
                     write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE.AOI_CONFIG[aoi_type]['Alarms'][alarm_tag])
 
                     # add alarm to alarms
-                    write_alarm(ET,alarmelements,aoi_type,aoi_instance,alarm_tag,device_shortcut,alarm_groupID,alarm_message_index,FTAE.AOI_CONFIG[aoi_type]['Msg_Params'])
+                    write_alarm(ET,alarmelements,plc_name,aoi_type,aoi_instance,alarm_tag,device_shortcut,alarm_groupID,alarm_message_index,FTAE.AOI_CONFIG[aoi_type]['Msg_Params'])
                     
                     # add alarm tags to tags
 
@@ -614,5 +629,7 @@ def main():
 
     print('Done. File saved as ' + outfile + '. Exiting.')
 
+    validate_xml(outfile,'FTLDDAlarms.xsd')
+    
 if __name__ == "__main__":
     main()
