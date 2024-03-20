@@ -410,9 +410,9 @@ def main():
     
     # Add command-line arguments
     parser.add_argument('commpath', help='Path to PLC')
-    parser.add_argument('appname', help='FTView application name')   
+    #parser.add_argument('appname', help='FTView application name')   
     #parser.add_argument('areaname', help='FTView application area name')
-    parser.add_argument('servername', help='FTView Alarm & Event Server name')
+    #parser.add_argument('servername', help='FTView Alarm & Event Server name')
     parser.add_argument('groupID', nargs='?', default=default_groupID,help='PLC Group ID for alarms 1-9')
     parser.add_argument('deviceshortcut', nargs='?', default=default_deviceshortcut,help='Shortcut in FTView')
 
@@ -421,8 +421,8 @@ def main():
 
     # Access the parsed arguments
     commpath = args.commpath
-    appname = args.appname
-    servername = args.servername
+    #appname = args.appname
+    #servername = args.servername
     device_shortcut = args.deviceshortcut
     plc_groupID = int(args.groupID)
 
@@ -636,7 +636,8 @@ def main():
     tree = ET.ElementTree(FTAE.XML_ROOT)
 
     # add plc name to file and save to new file
-    outfile = appname + '_' + servername + '_AlarmExport.' + 'xml'
+    #outfile = appname + '_' + servername + '_AlarmExport.' + 'xml'
+    outfile = plc_name + '_FTAE_AlarmExport.' + 'xml'
     # Write the XML tree to a file with UTF-16 encoding
     tree.write(outfile, encoding="utf-16", xml_declaration=True,short_empty_elements=False)
 
