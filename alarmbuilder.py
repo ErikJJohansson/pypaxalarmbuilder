@@ -47,9 +47,9 @@ FTAE_DEFAULT_POLL_INDEX = 4 # 2 seconds
 FTAE_AOI_CONFIG = {
     "P_Alarm": {
         "Alarms": {
-            '': 'Alarm Condition: In Alarm'
+            '': 'In Alarm'
         },
-        "Msg_Params":{"Tag1":"Alm"}
+        "Msg_Params":{}
     },
     "P_AIChan": {
         "Alarms":{
@@ -202,15 +202,42 @@ FTAE_P_ALARM_TAGS = ['Com_AE.1','Com_AE.4','Com_AE.5','Com_AE.7','Com_AE.8','Com
 
 # check if tag is program tag
 def get_program_name_for_tag(tag):
-    substring = 'Program:'
+    # Regular expression pattern to extract "Anode_Gas_Management"
+    pattern = r'Program:([^.]+)'
 
-    index = tag.find(substring)
+    # Extracting the substring
+    match = re.search(pattern, tag)
 
-    if index != -1:
-        return tag[index + len(substring):]
+    if match:
+        extracted_string = match.group(1)
+        return extracted_string
+    else:
+        return ''
+    
+def get_shortcut_name(device_shortcut):
+    '''
+    function to get the name of the device shortcut
+    '''
+
+    pattern = r'\[(.*?)\]'
+
+    # Extracting the substring
+    match = re.search(pattern, device_shortcut)
+
+    if match:
+        extracted_string = match.group(1)
+        return extracted_string
     else:
         return ''
 
+
+
+
+# made this to keep track of indexes for alarms and whatnot
+def create_alarmgroup_database(plc_groupID, plc_name, plc_program_list):
+    '''
+    function to create a database of alarm groups
+    
     # PLC becomes group name, ID ranges from 1 to 9, max 9 PLC's per FTAE
     # groupID for each program is X01-X99 where X is the PLC group ID
     # add groupID for program to dictionary of program names
@@ -221,12 +248,6 @@ def get_program_name_for_tag(tag):
     # Controller scope tag message index starts at 101, to 9999
     # Program Scope tag message index starts at 10001, to 19999
     # Message ID can range between 1-2147483647
-
-
-# made this to keep track of indexes for alarms and whatnot
-def create_alarmgroup_database(plc_groupID, plc_name, plc_program_list):
-    '''
-    function to create a database of alarm groups
     '''
     alarm_dict = {}
 
@@ -261,9 +282,14 @@ def write_msg(ET,parent,msg_id,msg_text):
     msg_txt.text = msg_text
     msg_txt.tail = "\n"
 
-
+# P_Alarm has a different structure compared to AOI's with it embedded
 def write_alarm_p_alarm(ET,parent,aoi_instance,device_shortcut, group_id, message_id):
-    alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": aoi_instance + '_Alm',"inuse":"Yes","latched":"false","ackRequired":"true","style":"Discrete"})
+
+    shortcut_name = get_shortcut_name(device_shortcut)
+    aoi_instance_formatted = aoi_instance.replace(':','_').replace('.','_') # no colons or .
+    alarmelementname = shortcut_name + '_' + aoi_instance_formatted + '_Alm'
+
+    alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": alarmelementname,"inuse":"Yes","latched":"false","ackRequired":"true","style":"Discrete"})
     alarmelement.tail = "\n"
 
     discreteelement = ET.SubElement(alarmelement, "DiscreteElement")
@@ -380,14 +406,19 @@ def write_alarm_p_alarm(ET,parent,aoi_instance,device_shortcut, group_id, messag
 
 # make a  function so its easier to read
 def write_alarm(ET,parent,aoi_type,aoi_instance,alarm_tag,device_shortcut, group_id,message_id,param_list):
-    alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": aoi_instance + '_Alm_' + alarm_tag,"inuse":"Yes","latched":"false","ackRequired":"true","style":"Discrete"})
+    
+    shortcut_name = get_shortcut_name(device_shortcut)
+    aoi_instance_formatted = aoi_instance.replace(':','_').replace('.','_') # no colons or .
+    alarmelementname = shortcut_name + '_' + aoi_instance_formatted + '_Alm'
+
+    alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": alarmelementname,"inuse":"Yes","latched":"false","ackRequired":"true","style":"Discrete"})
     alarmelement.tail = "\n"
 
     discreteelement = ET.SubElement(alarmelement, "DiscreteElement")
     discreteelement.tail = "\n"
 
     dataitem = ET.SubElement(discreteelement, "DataItem")
-    dataitem.text = device_shortcut + aoi_instance + '_Alm_' + alarm_tag
+    dataitem.text = device_shortcut + aoi_instance + '.Alm_' + alarm_tag
     dataitem.tail = "\n"
 
     style = ET.SubElement(discreteelement, "Style")
@@ -501,14 +532,7 @@ def write_alarm(ET,parent,aoi_type,aoi_instance,alarm_tag,device_shortcut, group
         param.text = device_shortcut + aoi_instance + '.' + param_list[param_name]
         param.tail = "\n"
 
-def get_shortcut_name(device_shortcut):
-    '''
-    function to get the name of the device shortcut
-    '''
 
-    pattern = r'\[(.*?)\]'
-
-    return re.search(pattern,device_shortcut)
 
 def get_aoi_tag_instances(plc, tag_type):
     """
@@ -714,12 +738,13 @@ def main():
             # loop through each alarm in list for the instance type
             if aoi_type == 'P_Alarm':
                 alarm_message_index = alarm_group_db[aoi_program_name]['msg_index']
+                alarm_groupID = alarm_group_db[aoi_program_name]['groupID']
 
                 # add alarm message to messages
-                write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE_AOI_CONFIG[aoi_type]['Alarms'][alarm_tag])
+                write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE_AOI_CONFIG[aoi_type]['Alarms'][''])
 
                 # add alarm to alarms
-                write_alarm_p_alarm(ET,alarmelements,aoi_instance,device_shortcut,plc_groupID,alarm_message_index)
+                write_alarm_p_alarm(ET,alarmelements,aoi_instance,device_shortcut,alarm_groupID,alarm_message_index)
                 # add alarm tags to tags
 
                 # create tag path
@@ -744,12 +769,13 @@ def main():
                 for alarm_tag in aoi_alarm_tags:
                     
                     alarm_message_index = alarm_group_db[aoi_program_name]['msg_index']
+                    alarm_groupID = alarm_group_db[aoi_program_name]['groupID']
 
                     # add alarm message to messages
                     write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE_AOI_CONFIG[aoi_type]['Alarms'][alarm_tag])
 
                     # add alarm to alarms
-                    write_alarm(ET,alarmelements,aoi_type,aoi_instance,alarm_tag,device_shortcut,plc_groupID,alarm_message_index,FTAE_AOI_CONFIG[aoi_type]['Msg_Params'])
+                    write_alarm(ET,alarmelements,aoi_type,aoi_instance,alarm_tag,device_shortcut,alarm_groupID,alarm_message_index,FTAE_AOI_CONFIG[aoi_type]['Msg_Params'])
                     
                     # add alarm tags to tags
 
