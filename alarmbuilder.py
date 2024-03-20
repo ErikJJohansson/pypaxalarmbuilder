@@ -1,7 +1,5 @@
 from pycomm3 import LogixDriver
 from sys import argv
-from tqdm import trange, tqdm
-from itertools import product
 import argparse
 import xml.etree.ElementTree as ET
 import re
