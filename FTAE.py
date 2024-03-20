@@ -6,15 +6,15 @@ XML_VERSION = "12.1.0"
 XML_NS_MAP = {
     None: "urn://www.factorytalk.net/schema/2003/FTLDDAlarms.xsd",
     "dt": "urn:schemas-microsoft-com:datatypes",
-    "xsi": "http://www.w3.org/2001/XMLSchema-instance"
+    "xsi": "http://www.w3.org/2001/XMLSchema-instance",
 }
 
 # Create the root element with the defined namespaces and attributes
 XML_ROOT = ET.Element("FTAeAlarmStore", attrib={
     "xmlns:dt": XML_NS_MAP["dt"],
     "xmlns": XML_NS_MAP[None],
-    "xmlns:xsi": XML_NS_MAP["xsi"],
-    "xsi:schemaLocation": "urn://www.factorytalk.net/schema/2003/FTLDDAlarms.xsd FTLDDAlarms.xsd"
+    "xmlns:xsi": XML_NS_MAP["xsi"]#,
+    #"xsi:schemaLocation": "urn://www.factorytalk.net/schema/2003/FTLDDAlarms.xsd FTLDDAlarms.xsd"
 })
 
 
@@ -29,12 +29,6 @@ DETECTOR_COMMAND = "FTAeDetectorCommand"
 # Define AOI configuration and messages
 
 AOI_CONFIG = {
-    "P_Alarm": {
-        "Alarms": {
-            '': 'In Alarm'
-        },
-        "Msg_Params":{}
-    },
     "P_AIChan": {
         "Alarms":{
             "Fail": 'Channel Input bad or uncertain.  Val_InpRaw=/*S:0%Tag1*/; Val=/*S:0%Tag2*/;'
@@ -162,7 +156,13 @@ AOI_CONFIG = {
             "IntlkTrip": 'Interlock Trip',
         },
         "Msg_Params":{},
-    }, 
+    },
+    "P_Alarm": {
+        "Alarms": {
+            '': 'In Alarm'
+        },
+        "Msg_Params":{}
+    },
 }
 
 
