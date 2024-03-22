@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema xmlns="urn://www.factorytalk.net/schema/2003/FTLDDAlarms.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="urn://www.factorytalk.net/schema/2003/FTLDDAlarms.xsd" elementFormDefault="qualified"
+	attributeFormDefault="unqualified" version="1.0">
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="FTLLDDXml.xsd" />
+
+  <xs:simpleType name="NonEmptyString">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Alarm Operation types -->
+  <xs:simpleType name="OperationType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="WriteConfig" />
+      <xs:enumeration value="WriteMsg" />
+      <xs:enumeration value="WriteAlarmGroup" />
+      <xs:enumeration value="SetServerName" />
+      <xs:enumeration value="SetDAPollGroups" />
+      <xs:enumeration value="SetLanguages" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- Poll Group values -->
+  <xs:simpleType name="PollGroupValues">
+    <xs:restriction base="xs:decimal">
+      <xs:enumeration value="0.10" />
+      <xs:enumeration value="0.25" />
+      <xs:enumeration value="0.50" />
+      <xs:enumeration value="1" />
+      <xs:enumeration value="2" />
+      <xs:enumeration value="5" />
+      <xs:enumeration value="10" />
+      <xs:enumeration value="20" />
+      <xs:enumeration value="30" />
+      <xs:enumeration value="60" />
+      <xs:enumeration value="120" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- alarm styles -->
+  <xs:simpleType name="AlarmStyle">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Discrete" />
+      <xs:enumeration value="MultiLevel" />
+      <xs:enumeration value="Deviation" />
+      <xs:enumeration value="Event" />
+    </xs:restriction>
+  </xs:simpleType>
+    <!-- event styles -->
+  <xs:simpleType name="EventStyle">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DiscreteTrue" />
+      <xs:enumeration value="DiscreteFalse" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- discrete styles -->
+  <xs:simpleType name="DiscreteStyle">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DiscreteTrue" />
+      <xs:enumeration value="DiscreteFalse" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- comparison operators -->
+  <xs:simpleType name="ComparisonOperator">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="=" />
+      <xs:enumeration value="&lt;&gt;" />
+      <xs:enumeration value="&lt;=" />
+      <xs:enumeration value="&lt;" />
+      <xs:enumeration value="&gt;" />
+      <xs:enumeration value="&gt;=" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- Remote Ack Reset values -->
+  <xs:simpleType name="RemoteAckResetValues">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="true" />
+      <xs:enumeration value="false" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- delay intervals -->
+  <xs:simpleType name="DelayInterval">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="600" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- Target types -->
+  <xs:simpleType name="TargetTypes">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DataItem" />
+      <xs:enumeration value="Constant" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- severity range -->
+  <xs:simpleType name="SeverityRange">
+    <xs:restriction base="xs:string">
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- deadband units -->
+  <xs:simpleType name="DeadbandUnits">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Constant" />
+      <xs:enumeration value="None" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- delta types -->
+  <xs:simpleType name="DeltaTypes">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Constant" />
+      <xs:enumeration value="Percent" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- deadband -->
+  <xs:complexType name="Deadband">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="units" type="DeadbandUnits" use="required" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <!-- Remote Ack Type-->
+  <xs:complexType name="RemoteCtrlType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="AutoReset" type="RemoteAckResetValues" use="required" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <!-- Param typed -->
+  <xs:complexType name="ParamType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="key" type="xs:string" use="required" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <!-- Params type -->
+  <xs:complexType name="ParamsType">
+    <xs:sequence>
+      <xs:element name="Param" type="ParamType" minOccurs="0" maxOccurs="6" />
+    </xs:sequence>
+  </xs:complexType>
+  <!-- deviation style -->
+  <xs:simpleType name="DeviationStyle">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DEVLO" />
+      <xs:enumeration value="DEVHI" />
+      <xs:enumeration value="DEVHILO" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- condition type -->
+  <xs:simpleType name="ConditionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LOLO" />
+      <xs:enumeration value="LO" />
+      <xs:enumeration value="HIHI" />
+      <xs:enumeration value="HI" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- target-->
+  <xs:complexType name="Target">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="type" type="TargetTypes" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <!-- delta type -->
+  <xs:complexType name="DeltaType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="units" type="DeltaTypes" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <!-- message type -->
+  <xs:complexType name="MessageType">
+    <xs:sequence>
+      <xs:element name="Msgs">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Msg" maxOccurs="unbounded">
+              <xs:complexType mixed="true">
+                <xs:attribute ref="xml:lang" use="required" />
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="id" use="required">
+        <xs:simpleType>
+            <xs:restriction base="xs:nonNegativeInteger">
+                <xs:minInclusive value="1"/>
+                <xs:maxInclusive value="2147483647"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+  <!-- MessageRef -->
+  <xs:complexType name="MessageRef">
+    <xs:sequence>
+      <xs:element name="Params" type="ParamsType" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:nonNegativeInteger" use="required" />
+  </xs:complexType>
+  <!-- GroupType -->
+  <xs:complexType name="GroupType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="id" type="xs:positiveInteger" use="required" />
+        <xs:attribute name="parentID" type="xs:nonNegativeInteger" use="required" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <!-- handshake tags -->
+  <xs:complexType name="EventHandshakeType">
+    <xs:sequence>
+      <xs:element name="InAlarmDataItem" type="xs:string" />
+      <xs:element name="DisabledDataItem" type="xs:string" />
+      <xs:element name="SuppressedDataItem" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="HandshakeType">
+    <xs:sequence>
+      <xs:element name="InAlarmDataItem" type="xs:string" />
+      <xs:element name="DisabledDataItem" type="xs:string" />
+      <xs:element name="AckedDataItem" type="xs:string" />
+      <xs:element name="SuppressedDataItem" type="xs:string" />
+      <xs:element name="ShelvedDataItem" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="DeviationHandshakeType">
+    <xs:sequence>
+      <xs:element name="InAlarmHiDataItem" type="xs:string" />
+      <xs:element name="InAlarmLoDataItem" type="xs:string" />
+      <xs:element name="DisabledDataItem" type="xs:string" />
+      <xs:element name="AckedHiDataItem" type="xs:string" />
+      <xs:element name="AckedLoDataItem" type="xs:string" />
+      <xs:element name="SuppressedDataItem" type="xs:string" />
+      <xs:element name="ShelvedHiDataItem" type="xs:string" minOccurs="0" />
+      <xs:element name="ShelvedLoDataItem" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="MultiLevelsHandshakeType">
+    <xs:sequence>
+      <xs:element name="DisabledDataItem" type="xs:string" />
+      <xs:element name="SuppressedDataItem" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="MultiLevelHandshakeType">
+    <xs:sequence>
+      <xs:element name="InAlarmDataItem" type="xs:string" />
+      <xs:element name="AckedDataItem" type="xs:string" />
+      <xs:element name="ShelvedDataItem" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="MessageIDType">
+    <xs:restriction base="xs:nonNegativeInteger">
+		<xs:minInclusive value="0"/>
+		<xs:maxInclusive value="2147483647"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="GroupIDType">
+    <xs:restriction base="xs:nonNegativeInteger">
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- FTAeAlarmStore -->
+  <xs:element name="FTAeAlarmStore">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="DetectorStyle" type="xs:string" minOccurs="0" default="FTAeLiveDataDetector" />
+        <xs:element name="SequenceNumber" type="xs:unsignedLong" minOccurs="0" />
+        <xs:element name="Version" type="xs:string" />
+        <xs:element name="Commands">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="FTAeDetectorCommand" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Operation" type="OperationType" />
+                    <xs:choice>
+                      <xs:element name="ServerName" type="xs:string" minOccurs="0"></xs:element>
+                      <xs:element name="Language" minOccurs="0" maxOccurs="20">
+                        <xs:complexType mixed="true">
+                          <xs:attribute ref="xml:lang" use="optional" />
+                        </xs:complexType>
+                      </xs:element>
+                      <!-- PollGroups -->
+                      <xs:element name="PollGroups">
+                        <xs:complexType>
+                          <xs:sequence>
+                            <xs:element name="PollGroupTags" minOccurs="0" maxOccurs="20">
+                              <xs:complexType>
+                                <xs:sequence>
+                                  <xs:element name="Tag" minOccurs="0" maxOccurs="unbounded">
+                                    <xs:complexType>
+                                      <xs:simpleContent>
+                                        <xs:extension base="xs:string" />
+                                      </xs:simpleContent>
+                                    </xs:complexType>
+                                  </xs:element>
+                                </xs:sequence>
+                                <xs:attribute name="rate" type="PollGroupValues" />
+                              </xs:complexType>
+                            </xs:element>
+                          </xs:sequence>
+                        </xs:complexType>
+                      </xs:element>
+                      <!--Messages -->
+                      <xs:element name="Messages">
+                        <xs:complexType>
+                          <xs:sequence>
+                            <xs:element name="Message" type="MessageType" minOccurs="0" maxOccurs="unbounded" />
+                          </xs:sequence>
+                        </xs:complexType>
+                      </xs:element>
+                      <!--Groups -->
+                      <xs:element name="Groups">
+                        <xs:complexType>
+                          <xs:sequence>
+                            <xs:element name="Group" type="GroupType" minOccurs="0" maxOccurs="unbounded" />
+                          </xs:sequence>
+                        </xs:complexType>
+                      </xs:element>
+                      <!-- FTAlarmElemenets -->
+                      <xs:element name="FTAlarmElements">
+                        <xs:complexType>
+                          <xs:sequence>
+                            <xs:element name="FTAlarmElement" minOccurs="0" maxOccurs="unbounded">
+                              <xs:complexType>
+                                <xs:sequence>
+                                  <xs:choice>
+                                    <xs:element name="EventElement" minOccurs="0">
+                                      <xs:complexType>
+                                        <xs:sequence>
+                                          <xs:element name="DataItem" type="xs:string" />
+                                          <xs:element name="Style" type="EventStyle" />
+                                          <xs:element name="Target" type="Target" />
+                                          <xs:element name="DelayInterval" type="DelayInterval" />
+                                          <xs:element name="Deadband" type="Deadband" />
+                                          <xs:element name="UserData" type="xs:string" minOccurs="0" />
+                                          <xs:element name="RSVCmd" type="xs:string" minOccurs="0" />
+                                          <xs:element name="AlarmClass" type="xs:string" minOccurs="0" />
+                                          <xs:element name="GroupID" type="GroupIDType" minOccurs="0" maxOccurs="1" />
+                                          <xs:element name="EventHandshakeTags" type="EventHandshakeType" minOccurs="0" />
+                                          <xs:element name="RemoteDisableDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteEnableDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteResetDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteSuppressDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteUnSuppressDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="MessageID" type="MessageIDType" minOccurs="1" maxOccurs="unbounded" />
+                                          <xs:element name="Params" type="ParamsType" minOccurs="1" maxOccurs="unbounded" />
+                                        </xs:sequence>
+                                      </xs:complexType>
+                                    </xs:element>
+                                    <xs:element name="DiscreteElement" minOccurs="0">
+                                      <xs:complexType>
+                                        <xs:sequence>
+                                          <xs:element name="DataItem" type="xs:string" />
+                                          <xs:element name="Style" type="DiscreteStyle" />
+                                          <xs:element name="Severity" type="SeverityRange" />
+                                          <xs:element name="DelayInterval" type="DelayInterval" />
+                                          <xs:element name="EnableTag" type="xs:boolean" minOccurs="0" />
+                                          <xs:element name="UserData" type="xs:string" minOccurs="0" />
+                                          <xs:element name="RSVCmd" type="xs:string" minOccurs="0" />
+                                          <xs:element name="AlarmClass" type="xs:string" minOccurs="0" />
+                                          <xs:element name="GroupID" type="GroupIDType" minOccurs="0" maxOccurs="1" />
+                                          <xs:element name="HandshakeTags" type="HandshakeType" minOccurs="0" />
+                                          <xs:element name="RemoteAckAllDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteDisableDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteEnableDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteSuppressDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteUnSuppressDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteShelveAllDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteUnShelveDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteShelveDuration" type="xs:string" minOccurs="0" />
+                                          <xs:element name="MessageID" type="MessageIDType" minOccurs="1" maxOccurs="unbounded" />
+                                          <xs:element name="Params" type="ParamsType" minOccurs="1" maxOccurs="unbounded" />
+                                        </xs:sequence>
+                                      </xs:complexType>
+                                    </xs:element>
+                                    <xs:element name="DeviationElement" minOccurs="0">
+                                      <xs:complexType>
+                                        <xs:sequence>
+                                          <xs:element name="SourceDataItem" type="xs:string" />
+                                          <xs:element name="Style" type="DeviationStyle" />
+                                          <xs:element name="Severity" type="SeverityRange" />
+                                          <xs:element name="DelayInterval" type="DelayInterval" />
+                                          <xs:element name="Target" type="Target" />
+                                          <xs:element name="Delta" type="DeltaType" />
+                                          <xs:element name="Deadband" type="Deadband" />
+                                          <xs:element name="EnableTag" type="xs:boolean" minOccurs="0" />
+                                          <xs:element name="UserData" type="xs:string" minOccurs="0" />
+                                          <xs:element name="RSVCmd" type="xs:string" minOccurs="0" />
+                                          <xs:element name="AlarmClass" type="xs:string" minOccurs="0" />
+                                          <xs:element name="GroupID" type="GroupIDType" minOccurs="0" maxOccurs="1" />
+                                          <xs:element name="DeviationHandshakeTags" type="DeviationHandshakeType" minOccurs="0" />
+                                          <xs:element name="RemoteAckAllDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteAckHiDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteAckLoDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteDisableDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteEnableDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteSuppressDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteUnSuppressDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteShelveAllDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteShelveHiDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteShelveLoDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteUnShelveDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteShelveDuration" type="xs:string" minOccurs="0" />
+                                          <xs:element name="Deviations">
+                                            <xs:complexType>
+                                              <xs:sequence>
+                                                <xs:element name="Deviation" maxOccurs="2">
+                                                  <xs:complexType>
+                                                    <xs:sequence>
+                                                      <xs:element name="Comparison" type="ComparisonOperator" />
+                                                      <xs:element name="MessageID" type="MessageIDType" minOccurs="0" maxOccurs="unbounded" />
+                                                    </xs:sequence>
+                                                  </xs:complexType>
+                                                </xs:element>
+                                              </xs:sequence>
+                                            </xs:complexType>
+                                          </xs:element>
+                                          <xs:element name="Params" type="ParamsType" minOccurs="1" maxOccurs="unbounded" />
+                                        </xs:sequence>
+                                      </xs:complexType>
+                                    </xs:element>
+                                    <xs:element name="MultiLevelElement">
+                                      <xs:complexType>
+                                        <xs:sequence>
+                                          <xs:element name="SourceDataItem" type="xs:string" />
+                                          <xs:element name="DelayInterval" type="DelayInterval" />
+                                          <xs:element name="Deadband" type="Deadband" />
+                                          <xs:element name="EnableTag" type="xs:boolean" minOccurs="0" />
+                                          <xs:element name="UserData" type="xs:string" minOccurs="0" />
+                                          <xs:element name="RSVCmd" type="xs:string" minOccurs="0" />
+                                          <xs:element name="AlarmClass" type="xs:string" minOccurs="0" />
+                                          <xs:element name="GroupID" type="GroupIDType" minOccurs="0" maxOccurs="1" />
+                                          <xs:element name="MultiLevelHandshakeTags" type="MultiLevelsHandshakeType" minOccurs="0" />
+                                          <xs:element name="RemoteAckAllDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteDisableDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteEnableDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteSuppressDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteUnSuppressDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteShelveAllDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteUnShelveDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                          <xs:element name="RemoteShelveDuration" type="xs:string" minOccurs="0" />
+                                          <xs:element name="Levels">
+                                            <xs:complexType>
+                                              <xs:sequence>
+                                                <xs:element name="Level" maxOccurs="4">
+                                                  <xs:complexType>
+                                                    <xs:sequence>
+                                                      <xs:element name="Target" type="Target" />
+                                                      <xs:element name="Severity" type="SeverityRange" />
+                                                      <xs:element name="ApplyDuration" type="xs:boolean" minOccurs="0" />
+                                                      <xs:element name="ConditionType" type="ConditionType" />
+                                                      <xs:element name="Comparison" type="ComparisonOperator" />
+                                                      <xs:element name="MultiLevelLevelHandshakeTags" type="MultiLevelHandshakeType" minOccurs="0" />
+                                                      <xs:element name="RemoteAckLevelDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                                      <xs:element name="RemoteShelveLevelDataItem" type="RemoteCtrlType" minOccurs="0" />
+                                                      <xs:element name="MessageID" type="MessageIDType" minOccurs="1" maxOccurs="unbounded" />
+                                                    </xs:sequence>
+                                                  </xs:complexType>
+                                                </xs:element>
+                                              </xs:sequence>
+                                            </xs:complexType>
+                                          </xs:element>
+                                          <xs:element name="Params" type="ParamsType" minOccurs="0" maxOccurs="unbounded" />
+                                        </xs:sequence>
+                                      </xs:complexType>
+                                    </xs:element>
+                                  </xs:choice>
+                                </xs:sequence>
+                                <xs:attribute name="name" type="NonEmptyString" />
+								<xs:attribute name="inuse" type="NonEmptyString" />
+                                <xs:attribute name="latched" type="xs:boolean" />
+                                <xs:attribute name="ackRequired" type="xs:boolean" />
+                                <xs:attribute name="style" type="AlarmStyle" />
+                              </xs:complexType>
+                            </xs:element>
+                          </xs:sequence>
+                          <xs:attribute name="shelveMaxValue" type="xs:positiveInteger" use="optional" />
+                        </xs:complexType>
+                      </xs:element>
+                    </xs:choice>
+                  </xs:sequence>
+                  <xs:attribute name="style" type="xs:string" />
+                  <xs:attribute name="version" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
