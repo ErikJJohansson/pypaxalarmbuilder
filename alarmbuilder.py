@@ -2,6 +2,7 @@ from pycomm3 import LogixDriver
 from sys import argv
 import argparse
 import xml.etree.ElementTree as ET
+from itertools import product
 import re
 import FTAE
 import xmlschema
@@ -58,7 +59,7 @@ def create_alarmgroup_database(plc_groupID, plc_name, plc_program_list):
     # groupID for each program is X01-X99 where X is the PLC group ID
     # add groupID for program to dictionary of program names
     # add index element to each progrm name group ID
-    # messages start at X0YY0000 where XX is group ID
+    # messages start at XYY00000 where XX is group ID
     # YY is program number, max 99 programs per PLC
 
     # Controller scope tag message index starts at 101, to 9999
@@ -77,7 +78,7 @@ def create_alarmgroup_database(plc_groupID, plc_name, plc_program_list):
     for i, program in enumerate(plc_program_list):
         alarm_dict[program] = {}
         alarm_dict[program]['groupID'] = str((plc_groupID*100) + (i+1))
-        alarm_dict[program]['msg_index'] = str((plc_groupID*10000000) + (i+1)*10000 + 1)
+        alarm_dict[program]['msg_index'] = str((plc_groupID*10000000) + (i+1)*100000 + 1)
         alarm_dict[program]['parentID'] = str(plc_groupID)
         alarm_dict[program]['Name'] = program
 
@@ -102,6 +103,67 @@ def write_msg(ET,parent,msg_id,msg_text):
     msg_txt = ET.SubElement(msgs, "Msg", attrib={"xml:lang": "en-US"})
     msg_txt.text = msg_text
     msg_txt.tail = '\n'
+
+# write alarm that's only one tag (L_ModuleSts and bypass tags)
+def write_simple_alarm(ET,parent,plc_name,aoi_instance,alarm_tag,device_shortcut, group_id, message_id):
+    pass
+
+def process_alarm_element(ET, parent, plc_name,aoi_instance,alarm_tag,device_shortcut,inuse, latched, ackRequired, style, 
+                          dataItem, discreteStyle, severity, delayInterval, 
+                          enableTag, userData, rsvCmd, alarmClass, groupID, 
+                          inAlarmDataItem, disabledDataItem, ackedDataItem, 
+                          suppressedDataItem, shelvedDataItem, remoteAckAllDataItem, 
+                          remoteDisableDataItem, remoteEnableDataItem, remoteSuppressDataItem, 
+                          remoteUnSuppressDataItem, remoteShelveAllDataItem, remoteUnShelveDataItem, 
+                          remoteShelveDuration, messageID, params):
+    
+    alarm_name = plc_name + '_' + aoi_instance + '_' + alarm_tag + '_Alm'
+
+    tag_path = device_shortcut + aoi_instance + '.' + alarm_tag
+
+    # Create the root element
+    alarm_root = ET.SubElement(parent,'FTAlarmElement', 
+                      name=alarm_name, 
+                      inuse=inuse, 
+                      latched=latched, 
+                      ackRequired=ackRequired, 
+                      style=style)
+    
+    # Create DiscreteElement subelement
+    discrete_element = ET.SubElement(alarm_root, 'DiscreteElement')
+    
+    ET.SubElement(discrete_element, 'DataItem').text = dataItem
+    ET.SubElement(discrete_element, 'Style').text = discreteStyle
+    ET.SubElement(discrete_element, 'Severity').text = severity
+    ET.SubElement(discrete_element, 'DelayInterval').text = delayInterval
+    ET.SubElement(discrete_element, 'EnableTag').text = enableTag
+    ET.SubElement(discrete_element, 'UserData').text = userData
+    ET.SubElement(discrete_element, 'RSVCmd').text = rsvCmd
+    ET.SubElement(discrete_element, 'AlarmClass').text = alarmClass
+    ET.SubElement(discrete_element, 'GroupID').text = groupID
+    
+    # Create HandshakeTags subelement
+    handshake_tags = ET.SubElement(discrete_element, 'HandshakeTags')
+    ET.SubElement(handshake_tags, 'InAlarmDataItem').text = inAlarmDataItem
+    ET.SubElement(handshake_tags, 'DisabledDataItem').text = disabledDataItem
+    ET.SubElement(handshake_tags, 'AckedDataItem').text = ackedDataItem
+    ET.SubElement(handshake_tags, 'SuppressedDataItem').text = suppressedDataItem
+    ET.SubElement(handshake_tags, 'ShelvedDataItem').text = shelvedDataItem
+    
+    # Create Remote*DataItem subelements
+    ET.SubElement(discrete_element, 'RemoteAckAllDataItem', AutoReset="false").text = remoteAckAllDataItem
+    ET.SubElement(discrete_element, 'RemoteDisableDataItem', AutoReset="false").text = remoteDisableDataItem
+    ET.SubElement(discrete_element, 'RemoteEnableDataItem', AutoReset="false").text = remoteEnableDataItem
+    ET.SubElement(discrete_element, 'RemoteSuppressDataItem', AutoReset="false").text = remoteSuppressDataItem
+    ET.SubElement(discrete_element, 'RemoteUnSuppressDataItem', AutoReset="false").text = remoteUnSuppressDataItem
+    ET.SubElement(discrete_element, 'RemoteShelveAllDataItem', AutoReset="false").text = remoteShelveAllDataItem
+    ET.SubElement(discrete_element, 'RemoteUnShelveDataItem', AutoReset="false").text = remoteUnShelveDataItem
+    ET.SubElement(discrete_element, 'RemoteShelveDuration').text = remoteShelveDuration
+    
+    ET.SubElement(discrete_element, 'MessageID').text = messageID
+    ET.SubElement(discrete_element, 'Params').text = params
+
+
 
 # P_Alarm has a different structure compared to AOI's with it embedded
 def write_alarm_p_alarm(ET,parent,plc_name,aoi_instance,device_shortcut, group_id, message_id):
