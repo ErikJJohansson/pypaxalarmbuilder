@@ -108,7 +108,7 @@ def write_msg(ET,parent,msg_id,msg_text):
 def write_simple_alarm(ET,parent,plc_name,aoi_instance,alarm_tag,device_shortcut, group_id, message_id):
     pass
 
-def process_alarm_element(ET, parent, plc_name,aoi_instance,alarm_tag,device_shortcut,inuse, latched, ackRequired, style, 
+def process_alarm_element(ET, parent, plc_name,aoi_instance,alarm_tag,device_shortcut, 
                           dataItem, discreteStyle, severity, delayInterval, 
                           enableTag, userData, rsvCmd, alarmClass, groupID, 
                           inAlarmDataItem, disabledDataItem, ackedDataItem, 
@@ -119,15 +119,29 @@ def process_alarm_element(ET, parent, plc_name,aoi_instance,alarm_tag,device_sho
     
     alarm_name = plc_name + '_' + aoi_instance + '_' + alarm_tag + '_Alm'
 
-    tag_path = device_shortcut + aoi_instance + '.' + alarm_tag
+    # boolean flag to get program tag path
+    if aoi_instance.startswith('Program:'):
+        is_program_tag = True
+    else:
+        is_program_tag = False
+
+    # used for commands
+    if is_program_tag:
+        program_path = device_shortcut + aoi_instance + '.'
+        tag_path = program_path + alarm_tag
+    else:
+        program_path = device_shortcut
+        tag_path = device_shortcut + aoi_instance
+
+    
 
     # Create the root element
     alarm_root = ET.SubElement(parent,'FTAlarmElement', 
                       name=alarm_name, 
-                      inuse=inuse, 
-                      latched=latched, 
-                      ackRequired=ackRequired, 
-                      style=style)
+                      inuse="Yes", 
+                      latched="false", 
+                      ackRequired="true", 
+                      style="Discrete")
     
     # Create DiscreteElement subelement
     discrete_element = ET.SubElement(alarm_root, 'DiscreteElement')
@@ -410,7 +424,7 @@ def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,device_shortc
     # Add parameters to the alarm
     for param_name in param_list.keys():
         param = ET.SubElement(parameters, "Param", attrib={"key": param_name})
-        param.text = device_shortcut + aoi_instance + '.' + param_list[param_name]
+        param.text = device_shortcut + aoi_instance + param_list[param_name]
         param.tail = '\n'
 
 
@@ -591,14 +605,13 @@ def main():
         aoi_instance_list = get_aoi_tag_instances(plc, aoi_type)
 
         # get list of alarm tags for each AOI type
-        aoi_alarm_tags = FTAE.AOI_CONFIG[aoi_type]['Alarms']
+        aoi_alarm_tags = FTAE.AOI_CONFIG[aoi_type]['Alarms'].keys()
 
         # loop through each instance of the AOI type
         for aoi_instance in aoi_instance_list:
             
             # get the P&ID tag and description from PLC
-            # this is used to help make the messages for the alarms
-
+            # this is used to make the messages for the alarms
             aoi_cfg_tag = plc.read(aoi_instance + '.Cfg_Tag')[1]
             if aoi_type == 'P_Alarm':
                 aoi_cfg_desc = plc.read(aoi_instance + '.Cfg_Cond')[1]
@@ -612,7 +625,15 @@ def main():
             aoi_msg_start = plc_name + ' - ' + aoi_cfg_tag + ' - ' + aoi_cfg_desc + ' - '
 
             # add parameters for alarm tags to tag list
-            alarm_tag_parameters = make_tag_list(aoi_instance,FTAE.AOI_CONFIG[aoi_type]['Msg_Params'].values())
+            #alarm_tag_parameters = make_tag_list(aoi_instance,FTAE.AOI_CONFIG[aoi_type]['Msg_Params'].values())
+
+            # Get list of alarms for the aoi instance
+            alarm_instances = FTAE.AOI_CONFIG[aoi_type]['Alarms'].keys()
+
+            for alarm_element in alarm_instances:
+                alarm_tag_parameters = make_tag_list(aoi_instance,FTAE.AOI_CONFIG[aoi_type]['Alarms'][alarm_element]['Params'])
+
+                # add alarm tags to poll group
 
 
             for tag in alarm_tag_parameters:
