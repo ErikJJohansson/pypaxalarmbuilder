@@ -104,16 +104,6 @@ def write_msg(ET,parent,msg_id,msg_text):
     msg_txt.text = msg_text
     msg_txt.tail = '\n'
 
-
-def get_tags_for_alarm(plc_name,aoi_type,aoi_instance,alarm_tag,alarm_type,device_shortcut):
-
-    tag_list = []
-
-    tag_path = device_shortcut + aoi_instance
-
-
-
-
 # make a  function so its easier to read
 def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,alarm_type,device_shortcut, group_id,message_id,param_list):
 
@@ -264,6 +254,7 @@ def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,alarm_type,de
     remoteShelveDuration.text = FTAE.ALARM_TYPE_CONFIG[alarm_type]['RemoteShelveDuration'].replace("TAGPATH",tag_path).replace("ALMTAG",alarm_tag)
     
     # check if tag is hardcoded, if not add to tag list
+    # if the first item is good, we know the rest are ok to add
     if disableddataitem.text.startswith(device_shortcut):
         tag_list.append(disableddataitem.text)
         tag_list.append(ackeddataitem.text)
@@ -352,12 +343,8 @@ def main():
     
     # Add command-line arguments
     parser.add_argument('commpath', help='Path to PLC')
-    #parser.add_argument('appname', help='FTView application name')   
-    #parser.add_argument('areaname', help='FTView application area name')
-    #parser.add_argument('servername', help='FTView Alarm & Event Server name')
     parser.add_argument('groupID', nargs='?', default=default_groupID,help='PLC Group ID for alarms 1-9')
     parser.add_argument('deviceshortcut', nargs='?', default=default_deviceshortcut,help='Shortcut in FTView')
-
                                        
     args = parser.parse_args()
 
@@ -495,8 +482,6 @@ def main():
                 # list of tags for the AOI instance to be added to Tag poll group
                 aoi_tag_list = []
 
-                aoi_instance_tag_path = device_shortcut + aoi_instance
-
                 # check if tag is program tag
                 aoi_program_name = get_program_name_for_tag(aoi_instance)
 
@@ -515,39 +500,6 @@ def main():
                     # get the alarm type, Embedded, Tag or P_Alarm
                     alarm_type = FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Type']
 
-                    # add Alarm & Severity tags to list
-                    # this differs based on the alarm type
-                    '''
-                    if alarm_type == "Tag":
-                        pass
-                                                                                        
-                    elif alarm_type == "Embedded":
-
-                        # add tags for alarm tag & severity
-                        aoi_tag_list.append(aoi_instance_tag_path + '.Alm_' + alarm_instance)
-                        aoi_tag_list.append(aoi_instance_tag_path + '.Cfg_' + alarm_instance + 'Severity')
-
-                        # add alarm control tags
-                        alarm_tags_to_add = make_tag_list(aoi_instance_tag_path + '.' + alarm_instance, FTAE.P_ALARM_TAGS)
-                        
-                        aoi_tag_list += alarm_tags_to_add
-
-                    elif alarm_type == "P_Alarm":
-                        # add tags for alarm tag & severity
-                        aoi_tag_list.append(aoi_instance_tag_path + '.Alm')
-                        aoi_tag_list.append(aoi_instance_tag_path + '.Cfg_Severity')
-
-                        # add alarm control tags
-                        alarm_tags_to_add = make_tag_list(aoi_instance_tag_path, FTAE.P_ALARM_TAGS)
-                        
-                        aoi_tag_list += alarm_tags_to_add
-                    else:
-                        print("Invalid alarm type of " + alarm_type + " for " + aoi_instance_tag_path + alarm_instance + ". Skipping")
-                    '''
-                    # add tags for alarm tag, only in parameters group
-                    #parameter_tags_to_add = make_tag_list(aoi_instance_tag_path,list(FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Params'].values()))
-                    #aoi_tag_list += parameter_tags_to_add
-
                     # add alarm message to messages
                     write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Msg'])
 
@@ -559,9 +511,7 @@ def main():
                     index_update = int(alarm_message_index) + 1
                     alarm_group_db[aoi_program_name]['msg_index'] = str(index_update)
 
-
-
-                # add all tags
+                # add all tags to tag group
                 for tag in aoi_tag_list:
                     # add P_Alarm tags to poll group
                     alm_tag_parameter = ET.SubElement(pollgrouptags_rate[FTAE.DEFAULT_POLL_INDEX],"Tag")
