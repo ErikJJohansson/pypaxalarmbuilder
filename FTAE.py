@@ -64,7 +64,7 @@ AOI_CONFIG = {
             "Params": {},
             "Name": "PLCNAME_TAGNAME_Alm_ModuleFaulted",
             "Severity": str(MODFAULT_SEVERITY),
-            "DataItem": ".Sts_IOFault",
+            "DataItem": "TAGPATH.Sts_IOFault",
         }
     },
     "P_AIChan": {
@@ -125,7 +125,7 @@ AOI_CONFIG = {
             "Msg": 'Input is being simulated. This can defeat interlocks and safety systems.',
             "Params":{},
             "Severity": str(SIMULATED_SEVERITY),
-            "DataItem": ".Sts_SubstPV",                 
+            "DataItem": "TAGPATH.Sts_SubstPV",                 
         }    
     },
     "P_AInDual": {
@@ -175,7 +175,7 @@ AOI_CONFIG = {
             "Msg": 'Input is being simulated. This can defeat interlocks and safety systems.',
             "Params":{},
             "Severity": str(SIMULATED_SEVERITY),
-            "DataItem": ".Sts_SubstPV",                
+            "DataItem": "TAGPATH.Sts_SubstPV",                
         },
         "Diff":{
             "Name": "PLCNAME_TAGNAME_Alm_LoLo",
