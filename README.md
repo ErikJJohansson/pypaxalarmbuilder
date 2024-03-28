@@ -1,4 +1,4 @@
-# pypaxalarmbuilder
+# PlantPAX Python-based Alarm Builder Tool
 
 ## Description
 
