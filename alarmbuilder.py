@@ -2,6 +2,7 @@ from pycomm3 import LogixDriver
 from sys import argv
 import argparse
 import xml.etree.ElementTree as ET
+from itertools import product
 import re
 import FTAE
 import xmlschema
@@ -58,7 +59,7 @@ def create_alarmgroup_database(plc_groupID, plc_name, plc_program_list):
     # groupID for each program is X01-X99 where X is the PLC group ID
     # add groupID for program to dictionary of program names
     # add index element to each progrm name group ID
-    # messages start at X0YY0000 where XX is group ID
+    # messages start at XYY00000 where XX is group ID
     # YY is program number, max 99 programs per PLC
 
     # Controller scope tag message index starts at 101, to 9999
@@ -77,7 +78,7 @@ def create_alarmgroup_database(plc_groupID, plc_name, plc_program_list):
     for i, program in enumerate(plc_program_list):
         alarm_dict[program] = {}
         alarm_dict[program]['groupID'] = str((plc_groupID*100) + (i+1))
-        alarm_dict[program]['msg_index'] = str((plc_groupID*10000000) + (i+1)*10000 + 1)
+        alarm_dict[program]['msg_index'] = str((plc_groupID*10000000) + (i+1)*100000 + 1)
         alarm_dict[program]['parentID'] = str(plc_groupID)
         alarm_dict[program]['Name'] = program
 
@@ -103,150 +104,64 @@ def write_msg(ET,parent,msg_id,msg_text):
     msg_txt.text = msg_text
     msg_txt.tail = '\n'
 
-# P_Alarm has a different structure compared to AOI's with it embedded
-def write_alarm_p_alarm(ET,parent,plc_name,aoi_instance,device_shortcut, group_id, message_id):
-
-    aoi_instance_formatted = replace_characters_with_underscore(aoi_instance,':.[]')
-    alarmelementname = plc_name + '_' + aoi_instance_formatted + '_Alm'
-
-    alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": alarmelementname,"inuse":"Yes","latched":"false","ackRequired":"true","style":"Discrete"})
-    alarmelement.tail = '\n'
-
-    discreteelement = ET.SubElement(alarmelement, "DiscreteElement")
-    discreteelement.tail = '\n'
-
-    dataitem = ET.SubElement(discreteelement, "DataItem")
-    dataitem.text = device_shortcut + aoi_instance + '.Alm'
-    dataitem.tail = '\n'
-
-    style = ET.SubElement(discreteelement, "Style")
-    style.text = "DiscreteTrue"
-    style.tail = '\n'
-
-    severity = ET.SubElement(discreteelement, "Severity")
-    severity.text = device_shortcut + aoi_instance + '.Cfg_Severity'
-    severity.tail = '\n'
-
-    delayinterval   = ET.SubElement(discreteelement, "DelayInterval")
-    delayinterval.text = "0"
-    delayinterval.tail = '\n'
-
-    enabletag = ET.SubElement(discreteelement, "EnableTag")
-    enabletag.text = "false"
-    enabletag.tail = '\n'
-
-    userdata = ET.SubElement(discreteelement, "UserData")
-    userdata.tail = '\n'
-
-    rsvcmd = ET.SubElement(discreteelement, "RSVCmd")
-    if aoi_instance.startswith('Program:'):
-        rsvcmd.text = "AE_DisplayP_AlarmFaceplate " + device_shortcut + aoi_instance + " " + device_shortcut + aoi_instance.split('.')[0] + '. ' + device_shortcut + aoi_instance + '.Cfg_Cond' 
-    else:
-        rsvcmd.text = "AE_DisplayP_AlarmFaceplate " + device_shortcut + aoi_instance + " " + device_shortcut + ' ' + device_shortcut + aoi_instance + '.Cfg_Cond'
-        
-    rsvcmd.tail = '\n'
-
-    alarmclass = ET.SubElement(discreteelement, "AlarmClass")
-    alarmclass.text = 'P_Alarm'
-    alarmclass.tail = '\n'
-
-    groupid = ET.SubElement(discreteelement, "GroupID")
-    groupid.text = str(group_id)
-    groupid.tail = '\n'
-
-    handshaketags = ET.SubElement(discreteelement, "HandshakeTags")
-    handshaketags.tail = '\n'
-
-    inalarmdataitem = ET.SubElement(handshaketags, "InAlarmDataItem")
-    inalarmdataitem.tail = '\n'
-
-    disableddataitem = ET.SubElement(handshaketags, "DisabledDataItem")
-    disableddataitem.text = device_shortcut + aoi_instance + '.Com_AE.9'
-    disableddataitem.tail = '\n'
-
-    ackeddataitem = ET.SubElement(handshaketags, "AckedDataItem")
-    ackeddataitem.text = device_shortcut + aoi_instance + '.Com_AE.1'
-    ackeddataitem.tail = '\n'
-
-    suppresseddataitem = ET.SubElement(handshaketags, "SuppressedDataItem")
-    suppresseddataitem.text = device_shortcut + aoi_instance + '.Com_AE.6'
-    suppresseddataitem.tail = '\n'
-
-    shelveddataitem = ET.SubElement(handshaketags, "ShelvedDataItem")
-    shelveddataitem.text = device_shortcut + aoi_instance + '.Com_AE.3'
-    shelveddataitem.tail = '\n'
-
-    # Add RemoteAckAllDataItem element
-    remoteAckAllDataItem = ET.SubElement(discreteelement, "RemoteAckAllDataItem", AutoReset="false")
-    remoteAckAllDataItem.text = device_shortcut + aoi_instance + '.Com_AE.1'
-    remoteAckAllDataItem.tail = '\n'
-
-    # Add RemoteDisableDataItem element
-    remoteDisableDataItem = ET.SubElement(discreteelement, "RemoteDisableDataItem", AutoReset="true")
-    remoteDisableDataItem.text = device_shortcut + aoi_instance + '.Com_AE.10'
-    remoteDisableDataItem.tail = '\n'
-
-    # Add RemoteEnableDataItem element
-    remoteEnableDataItem = ET.SubElement(discreteelement, "RemoteEnableDataItem", AutoReset="true")
-    remoteEnableDataItem.text = device_shortcut + aoi_instance + '.Com_AE.11'
-    remoteEnableDataItem.tail = '\n'
-
-    # Add RemoteSuppressDataItem element
-    remoteSuppressDataItem = ET.SubElement(discreteelement, "RemoteSuppressDataItem", AutoReset="true")
-    remoteSuppressDataItem.text = device_shortcut + aoi_instance + '.Com_AE.7'
-    remoteSuppressDataItem.tail = '\n'
-
-    # Add RemoteUnSuppressDataItem element
-    remoteUnsuppressDataItem = ET.SubElement(discreteelement, "RemoteUnSuppressDataItem", AutoReset="true")
-    remoteUnsuppressDataItem.text = device_shortcut + aoi_instance + '.Com_AE.8'
-    remoteUnsuppressDataItem.tail = '\n'
-
-    # Add RemoteShelveAllDataItem element
-    remoteShelveAllDataItem = ET.SubElement(discreteelement, "RemoteShelveAllDataItem", AutoReset="true")
-    remoteShelveAllDataItem.text = device_shortcut + aoi_instance + '.Com_AE.4'
-    remoteShelveAllDataItem.tail = '\n'
-
-    # Add RemoteUnShelveDataItem element
-    remoteUnshelveDataItem = ET.SubElement(discreteelement, "RemoteUnShelveDataItem", AutoReset="true")
-    remoteUnshelveDataItem.text = device_shortcut + aoi_instance + '.Com_AE.5'
-    remoteUnshelveDataItem.tail = '\n'
-
-    # Add RemoteShelveDuration element
-    remoteShelveDuration = ET.SubElement(discreteelement, "RemoteShelveDuration")
-    remoteShelveDuration.text = device_shortcut + aoi_instance + ".Cfg_MaxShelfT"
-    remoteShelveDuration.tail = '\n'
-
-    # Add MessageID element
-    messageID = ET.SubElement(discreteelement, "MessageID")
-    messageID.text = str(message_id)
-    messageID.tail = '\n'
-
-    parameters = ET.SubElement(discreteelement, "Params")
-    parameters.tail = '\n'
-
 # make a  function so its easier to read
-def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,device_shortcut, group_id,message_id,param_list):
+def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,alarm_type,device_shortcut, group_id,message_id,param_list):
 
-    aoi_instance_formatted = replace_characters_with_underscore(aoi_instance,':.[]')
-    alarmelementname = plc_name + '_' + aoi_instance_formatted + '_' + alarm_tag + '_Alm'
+    tag_list = []
 
-    alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": alarmelementname,"inuse":"Yes","latched":"false","ackRequired":"true","style":"Discrete"})
+    alarm_name_temp_1 = FTAE.ALARM_TYPE_CONFIG[alarm_type]['Name']
+    alarm_name_temp_2 = alarm_name_temp_1.replace("PLCNAME" , plc_name)
+    alarm_name_temp_3 = alarm_name_temp_2.replace("TAGNAME", aoi_instance)
+    alarm_name_temp_4 = alarm_name_temp_3.replace("ALMNAME", alarm_tag)
+
+    # replace characters with underscore
+    alarm_name = replace_characters_with_underscore(alarm_name_temp_4,':.[]')
+
+
+    # boolean flag to get program tag path
+    if aoi_instance.startswith('Program:'):
+        is_program_tag = True
+    else:
+        is_program_tag = False
+
+    # used for commands
+    if is_program_tag:
+        program_path = device_shortcut + aoi_instance.split('.')[0] + '.'
+        tag_path = device_shortcut + aoi_instance
+    else:
+        program_path = device_shortcut
+        tag_path = device_shortcut + aoi_instance
+
+    # create alarm structure
+    alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": alarm_name,"inuse":"Yes","latched":"false","ackRequired":"true","style":"Discrete"})
     alarmelement.tail = '\n'
 
     discreteelement = ET.SubElement(alarmelement, "DiscreteElement")
     discreteelement.tail = '\n'
 
+    dataitem_string = FTAE.AOI_CONFIG[aoi_type][alarm_tag]['DataItem']
+
     dataitem = ET.SubElement(discreteelement, "DataItem")
-    dataitem.text = device_shortcut + aoi_instance + '.Alm_' + alarm_tag
+    dataitem.text = dataitem_string.replace("TAGPATH",tag_path)
     dataitem.tail = '\n'
+
+    # add tag to list
+    tag_list.append(dataitem.text)
 
     style = ET.SubElement(discreteelement, "Style")
     style.text = "DiscreteTrue"
     style.tail = '\n'
 
+
+    # Configure Alarm Severity
+    severity_string = FTAE.AOI_CONFIG[aoi_type][alarm_tag]['Severity']
     severity = ET.SubElement(discreteelement, "Severity")
-    severity.text = device_shortcut + aoi_instance + '.Cfg_' + alarm_tag + 'Severity'
+    severity.text = severity_string.replace("TAGPATH",tag_path)
     severity.tail = '\n'
+
+    # check if severity is hardcoded, if not add to tag list
+    if (severity.text).startswith(device_shortcut):
+        tag_list.append(severity.text)
 
     delayinterval   = ET.SubElement(discreteelement, "DelayInterval")
     delayinterval.text = "0"
@@ -259,12 +174,10 @@ def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,device_shortc
     userdata = ET.SubElement(discreteelement, "UserData")
     userdata.tail = '\n'
 
+    rsvcmd_string = FTAE.ALARM_TYPE_CONFIG[alarm_type]['Cmd']
+
     rsvcmd = ET.SubElement(discreteelement, "RSVCmd")
-    if aoi_instance.startswith('Program:'):
-        rsvcmd.text = "AE_DisplayQuick " + device_shortcut + aoi_instance + " " + device_shortcut + aoi_instance.split('.')[0] + '.'
-    else:
-        rsvcmd.text = "AE_DisplayQuick " + device_shortcut + aoi_instance + " " + device_shortcut
-        
+    rsvcmd.text = (rsvcmd_string.replace("TAGPATH",tag_path)).replace("PROGPATH",program_path)
     rsvcmd.tail = '\n'
 
     alarmclass = ET.SubElement(discreteelement, "AlarmClass")
@@ -278,64 +191,84 @@ def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,device_shortc
     handshaketags = ET.SubElement(discreteelement, "HandshakeTags")
     handshaketags.tail = '\n'
 
+    # adding handshake tags
+
     inalarmdataitem = ET.SubElement(handshaketags, "InAlarmDataItem")
     inalarmdataitem.tail = '\n'
 
     disableddataitem = ET.SubElement(handshaketags, "DisabledDataItem")
-    disableddataitem.text = device_shortcut + aoi_instance + '.' + alarm_tag + '.Com_AE.9'
     disableddataitem.tail = '\n'
 
     ackeddataitem = ET.SubElement(handshaketags, "AckedDataItem")
-    ackeddataitem.text = device_shortcut + aoi_instance + '.' + alarm_tag + '.Com_AE.1'
     ackeddataitem.tail = '\n'
 
     suppresseddataitem = ET.SubElement(handshaketags, "SuppressedDataItem")
-    suppresseddataitem.text = device_shortcut + aoi_instance + '.' + alarm_tag + '.Com_AE.6'
     suppresseddataitem.tail = '\n'
 
     shelveddataitem = ET.SubElement(handshaketags, "ShelvedDataItem")
-    shelveddataitem.text = device_shortcut + aoi_instance + '.' + alarm_tag + '.Com_AE.3'
     shelveddataitem.tail = '\n'
 
     # Add RemoteAckAllDataItem element
     remoteAckAllDataItem = ET.SubElement(discreteelement, "RemoteAckAllDataItem", AutoReset="false")
-    remoteAckAllDataItem.text = device_shortcut + aoi_instance + '.' + alarm_tag + '.Com_AE.1'
     remoteAckAllDataItem.tail = '\n'
 
     # Add RemoteDisableDataItem element
     remoteDisableDataItem = ET.SubElement(discreteelement, "RemoteDisableDataItem", AutoReset="true")
-    remoteDisableDataItem.text = device_shortcut + aoi_instance + '.' + alarm_tag + '.Com_AE.10'
     remoteDisableDataItem.tail = '\n'
 
     # Add RemoteEnableDataItem element
     remoteEnableDataItem = ET.SubElement(discreteelement, "RemoteEnableDataItem", AutoReset="true")
-    remoteEnableDataItem.text = device_shortcut + aoi_instance + '.' + alarm_tag + '.Com_AE.11'
     remoteEnableDataItem.tail = '\n'
 
     # Add RemoteSuppressDataItem element
     remoteSuppressDataItem = ET.SubElement(discreteelement, "RemoteSuppressDataItem", AutoReset="true")
-    remoteSuppressDataItem.text = device_shortcut + aoi_instance + '.' + alarm_tag + '.Com_AE.7'
     remoteSuppressDataItem.tail = '\n'
 
     # Add RemoteUnSuppressDataItem element
     remoteUnsuppressDataItem = ET.SubElement(discreteelement, "RemoteUnSuppressDataItem", AutoReset="true")
-    remoteUnsuppressDataItem.text = device_shortcut + aoi_instance + '.' + alarm_tag + '.Com_AE.8'
     remoteUnsuppressDataItem.tail = '\n'
 
     # Add RemoteShelveAllDataItem element
     remoteShelveAllDataItem = ET.SubElement(discreteelement, "RemoteShelveAllDataItem", AutoReset="true")
-    remoteShelveAllDataItem.text = device_shortcut + aoi_instance + '.' + alarm_tag + '.Com_AE.4'
     remoteShelveAllDataItem.tail = '\n'
 
     # Add RemoteUnShelveDataItem element
     remoteUnshelveDataItem = ET.SubElement(discreteelement, "RemoteUnShelveDataItem", AutoReset="true")
-    remoteUnshelveDataItem.text = device_shortcut + aoi_instance + '.' + alarm_tag + '.Com_AE.5'
     remoteUnshelveDataItem.tail = '\n'
 
     # Add RemoteShelveDuration element
     remoteShelveDuration = ET.SubElement(discreteelement, "RemoteShelveDuration")
-    remoteShelveDuration.text = device_shortcut + aoi_instance + '.' + alarm_tag + ".Cfg_MaxShelfT"
     remoteShelveDuration.tail = '\n'
+
+    disableddataitem.text = (FTAE.ALARM_TYPE_CONFIG[alarm_type]['DisabledDataItem'].replace("TAGPATH",tag_path)).replace("ALMTAG",alarm_tag)
+    ackeddataitem.text = ((FTAE.ALARM_TYPE_CONFIG[alarm_type]['AckedDataItem']).replace("TAGPATH",tag_path)).replace("ALMTAG",alarm_tag)
+    suppresseddataitem.text = FTAE.ALARM_TYPE_CONFIG[alarm_type]['SuppressedDataItem'].replace("TAGPATH",tag_path).replace("ALMTAG",alarm_tag)
+    shelveddataitem.text = FTAE.ALARM_TYPE_CONFIG[alarm_type]['ShelvedDataItem'].replace("TAGPATH",tag_path).replace("ALMTAG",alarm_tag)
+    remoteAckAllDataItem.text = FTAE.ALARM_TYPE_CONFIG[alarm_type]['RemoteAckAllDataItem'].replace("TAGPATH",tag_path).replace("ALMTAG",alarm_tag)
+    remoteDisableDataItem.text = FTAE.ALARM_TYPE_CONFIG[alarm_type]['RemoteDisableDataItem'].replace("TAGPATH",tag_path).replace("ALMTAG",alarm_tag)
+    remoteEnableDataItem.text = FTAE.ALARM_TYPE_CONFIG[alarm_type]['RemoteEnableDataItem'].replace("TAGPATH",tag_path).replace("ALMTAG",alarm_tag)
+    remoteSuppressDataItem.text = FTAE.ALARM_TYPE_CONFIG[alarm_type]['RemoteSuppressDataItem'].replace("TAGPATH",tag_path).replace("ALMTAG",alarm_tag)
+    remoteUnsuppressDataItem.text = FTAE.ALARM_TYPE_CONFIG[alarm_type]['RemoteUnSuppressDataItem'].replace("TAGPATH",tag_path).replace("ALMTAG",alarm_tag)
+    remoteShelveAllDataItem.text = FTAE.ALARM_TYPE_CONFIG[alarm_type]['RemoteShelveAllDataItem'].replace("TAGPATH",tag_path).replace("ALMTAG",alarm_tag)
+    remoteUnshelveDataItem.text = FTAE.ALARM_TYPE_CONFIG[alarm_type]['RemoteUnShelveDataItem'].replace("TAGPATH",tag_path).replace("ALMTAG",alarm_tag)
+    remoteShelveDuration.text = FTAE.ALARM_TYPE_CONFIG[alarm_type]['RemoteShelveDuration'].replace("TAGPATH",tag_path).replace("ALMTAG",alarm_tag)
+    
+    # check if tag is hardcoded, if not add to tag list
+    # if the first item is good, we know the rest are ok to add
+    if disableddataitem.text.startswith(device_shortcut):
+        tag_list.append(disableddataitem.text)
+        tag_list.append(ackeddataitem.text)
+        tag_list.append(suppresseddataitem.text)
+        tag_list.append(shelveddataitem.text)
+        tag_list.append(remoteAckAllDataItem.text)
+        tag_list.append(remoteDisableDataItem.text)
+        tag_list.append(remoteEnableDataItem.text)
+        tag_list.append(remoteSuppressDataItem.text)
+        tag_list.append(remoteUnsuppressDataItem.text)
+        tag_list.append(remoteShelveAllDataItem.text)
+        tag_list.append(remoteUnshelveDataItem.text)
+        tag_list.append(remoteShelveDuration.text)
+
 
     # Add MessageID element
     messageID = ET.SubElement(discreteelement, "MessageID")
@@ -348,10 +281,13 @@ def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,device_shortc
     # Add parameters to the alarm
     for param_name in param_list.keys():
         param = ET.SubElement(parameters, "Param", attrib={"key": param_name})
-        param.text = device_shortcut + aoi_instance + '.' + param_list[param_name]
+        param.text = tag_path + param_list[param_name]
         param.tail = '\n'
 
+        tag_list.append(param.text)
 
+
+    return tag_list
 
 def get_aoi_tag_instances(plc, tag_type):
     """
@@ -390,7 +326,7 @@ def make_tag_list(base_tag,sub_tags):
     returns the full tag path of a given base tag and sub tags
     '''
     # concatenate base tag
-    read_list = [base_tag + '.' + s for s in sub_tags]
+    read_list = [base_tag + s for s in sub_tags]
 
     return read_list
 
@@ -401,19 +337,14 @@ def main():
     default_groupID = 1
 
     # Parse arguments
-   
     parser = argparse.ArgumentParser(
         description='Python-based PlantPAX alarm builder tool',
         epilog='This tool works on both Windows and Mac.')
     
     # Add command-line arguments
     parser.add_argument('commpath', help='Path to PLC')
-    #parser.add_argument('appname', help='FTView application name')   
-    #parser.add_argument('areaname', help='FTView application area name')
-    #parser.add_argument('servername', help='FTView Alarm & Event Server name')
     parser.add_argument('groupID', nargs='?', default=default_groupID,help='PLC Group ID for alarms 1-9')
     parser.add_argument('deviceshortcut', nargs='?', default=default_deviceshortcut,help='Shortcut in FTView')
-
                                        
     args = parser.parse_args()
 
@@ -481,8 +412,6 @@ def main():
     setdapollgroups_operation.text = "SetDAPollGroups"
     setdapollgroups_operation.tail = '\n'
 
-
-
     pollgroups = ET.SubElement(setdapollgroups_command, "PollGroups")
     pollgroups.tail = '\n'
 
@@ -522,112 +451,74 @@ def main():
     alarmelements = ET.SubElement(writeconfig_command, "FTAlarmElements", attrib={"shelveMaxValue":str(FTAE.SHELVE_MAX_VALUE)})
     alarmelements.tail = '\n'
 
-    #aoi_type = 'P_AIChan'
     # loop through each AOI type and write to xml
     for aoi_type in FTAE.AOI_CONFIG.keys():
         # get list of tags for each AOI typ
         aoi_instance_list = get_aoi_tag_instances(plc, aoi_type)
 
         # get list of alarm tags for each AOI type
-        aoi_alarm_tags = FTAE.AOI_CONFIG[aoi_type]['Alarms']
+        alarms_for_aoi_type = FTAE.AOI_CONFIG[aoi_type].keys()
 
         # loop through each instance of the AOI type
         for aoi_instance in aoi_instance_list:
-            
-            # get the P&ID tag and description from PLC
-            # this is used to help make the messages for the alarms
 
-            aoi_cfg_tag = plc.read(aoi_instance + '.Cfg_Tag')[1]
-            if aoi_type == 'P_Alarm':
-                aoi_cfg_desc = plc.read(aoi_instance + '.Cfg_Cond')[1]
-            else:
+            num_instances = len(aoi_instance_list)
+
+            if num_instances >= 1:
+                
+                # get the P&ID tag and description from PLC
+                # this is used to make the messages for the alarms
+         
+                aoi_cfg_tag = plc.read(aoi_instance + '.Cfg_Tag')[1]
                 aoi_cfg_desc = plc.read(aoi_instance + '.Cfg_Desc')[1]
 
-            # check if tag is program tag
-            aoi_program_name = get_program_name_for_tag(aoi_instance)
+                # if the tag is empty, set it to empty string
+                if aoi_cfg_tag == None:
+                    aoi_cfg_tag = aoi_instance
 
-            # maybe makes things easier to read
-            aoi_msg_start = plc_name + ' - ' + aoi_cfg_tag + ' - ' + aoi_cfg_desc + ' - '
+                if aoi_cfg_desc == None:
+                    aoi_cfg_desc = ''
 
-            # add parameters for alarm tags to tag list
-            alarm_tag_parameters = make_tag_list(aoi_instance,FTAE.AOI_CONFIG[aoi_type]['Msg_Params'].values())
+                # list of tags for the AOI instance to be added to Tag poll group
+                aoi_tag_list = []
 
+                # check if tag is program tag
+                aoi_program_name = get_program_name_for_tag(aoi_instance)
 
-            for tag in alarm_tag_parameters:
-                # add P_Alarm tags to poll group
-                alm_tag_parameter = ET.SubElement(pollgrouptags_rate[FTAE.DEFAULT_POLL_INDEX],"Tag")
-                alm_tag_parameter.text = device_shortcut + tag
-                alm_tag_parameter.tail = '\n'
+                # maybe makes things easier to read
+                aoi_msg_start = plc_name + ' - ' + aoi_cfg_tag + ' - ' 
+                if aoi_cfg_desc != '':
+                    aoi_msg_start += aoi_cfg_desc + ' - '
 
-            # loop through each alarm in list for the instance type
-            if aoi_type == 'P_Alarm':
-                alarm_message_index = alarm_group_db[aoi_program_name]['msg_index']
-                alarm_groupID = alarm_group_db[aoi_program_name]['groupID']
+                # loop through each alarm instance for the AOI type
+                for alarm_instance in alarms_for_aoi_type:
 
-                # add alarm message to messages
-                write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE.AOI_CONFIG[aoi_type]['Alarms'][''])
-
-                # add alarm to alarms
-                write_alarm_p_alarm(ET,alarmelements,plc_name,aoi_instance,device_shortcut,alarm_groupID,alarm_message_index)
-                # add alarm tags to tags
-
-                # create tag path
-                alarm_tag_and_elements = make_tag_list(aoi_instance,FTAE.P_ALARM_TAGS)
-
-                # add alarm tag to poll group
-                alm_tag = ET.SubElement(pollgrouptags_rate[FTAE.DEFAULT_POLL_INDEX],"Tag")
-                alm_tag.text = device_shortcut + aoi_instance + '.Alm'
-                alm_tag.tail = '\n'
-
-                severity_tag = ET.SubElement(pollgrouptags_rate[FTAE.DEFAULT_POLL_INDEX],"Tag")
-                severity_tag.text = device_shortcut + aoi_instance + '.Cfg_' + alarm_tag + 'Severity'
-                severity_tag.tail = '\n'
-
-                # add P_Alarm tags to poll group
-                for tag_name in alarm_tag_and_elements:
-                    tag = ET.SubElement(pollgrouptags_rate[FTAE.DEFAULT_POLL_INDEX],"Tag")
-                    tag.text = device_shortcut + tag_name
-                    tag.tail = '\n'
-
-                # update the message index
-                index_update = int(alarm_message_index) + 1
-                alarm_group_db[aoi_program_name]['msg_index'] = str(index_update)
-
-            else:
-                for alarm_tag in aoi_alarm_tags:
-                    
+                    # get the alarm group ID and message index from the database
                     alarm_message_index = alarm_group_db[aoi_program_name]['msg_index']
                     alarm_groupID = alarm_group_db[aoi_program_name]['groupID']
 
+                    # get the alarm type, Embedded, Tag or P_Alarm
+                    alarm_type = FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Type']
+
                     # add alarm message to messages
-                    write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE.AOI_CONFIG[aoi_type]['Alarms'][alarm_tag])
+                    write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Msg'])
 
-                    # add alarm to alarms
-                    write_alarm(ET,alarmelements,plc_name,aoi_type,aoi_instance,alarm_tag,device_shortcut,alarm_groupID,alarm_message_index,FTAE.AOI_CONFIG[aoi_type]['Msg_Params'])
-                    
-                    # add alarm tags to tags
-
-                    # create tag path
-                    alarm_tag_and_elements = make_tag_list(alarm_tag,FTAE.P_ALARM_TAGS)
-
-                    # add alarm tag to poll group
-                    alm_tag = ET.SubElement(pollgrouptags_rate[FTAE.DEFAULT_POLL_INDEX],"Tag")
-                    alm_tag.text = device_shortcut + aoi_instance + '.Alm_' + alarm_tag
-                    alm_tag.tail = '\n'
-
-                    severity_tag = ET.SubElement(pollgrouptags_rate[FTAE.DEFAULT_POLL_INDEX],"Tag")
-                    severity_tag.text = device_shortcut + aoi_instance + '.Cfg_' + alarm_tag + 'Severity'
-                    severity_tag.tail = '\n'
-
-                    # add P_Alarm tags to poll group
-                    for tag_name in alarm_tag_and_elements:
-                        tag = ET.SubElement(pollgrouptags_rate[FTAE.DEFAULT_POLL_INDEX],"Tag")
-                        tag.text = device_shortcut + aoi_instance + '.' + tag_name
-                        tag.tail = '\n'
+                    # write alarm and get all uses tags and add to tag list
+                    tags_to_add = write_alarm(ET,alarmelements,plc_name,aoi_type,aoi_instance,alarm_instance,alarm_type,device_shortcut,alarm_groupID,alarm_message_index,FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Params'])
+                    aoi_tag_list += tags_to_add
 
                     # update the message index
                     index_update = int(alarm_message_index) + 1
                     alarm_group_db[aoi_program_name]['msg_index'] = str(index_update)
+
+                # add all tags to tag group
+                for tag in aoi_tag_list:
+                    # add P_Alarm tags to poll group
+                    alm_tag_parameter = ET.SubElement(pollgrouptags_rate[FTAE.DEFAULT_POLL_INDEX],"Tag")
+                    alm_tag_parameter.text = tag
+                    alm_tag_parameter.tail = '\n'
+            else:
+                print('No instances of ' + aoi_type + ' found in PLC. Skipping')
 
     print('Generation complete. Writing to file')
     # Create the XML tree
