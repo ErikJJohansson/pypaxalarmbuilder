@@ -221,7 +221,7 @@ AOI_CONFIG = {
         },
         "IntlkTrip":{
             "Type": "Embedded",
-            "Msg": 'Interlock Trip - %Tag1',
+            "Msg": 'Interlock Trip - /*S:0%Tag1*/',
             "Params":{"Tag1":"_Intlk.Val_FirstOutTxt"},
             "Severity": "TAGPATH.Cfg_IntlkTripSeverity",
             "DataItem": "TAGPATH.Alm_IntlkTrip",                 
@@ -258,7 +258,7 @@ AOI_CONFIG = {
         },
         "IntlkTrip":{
             "Type": "Embedded",
-            "Msg": 'Interlock Trip - %Tag1',
+            "Msg": 'Interlock Trip - /*S:0%Tag1*/',
             "Params":{"Tag1":"_Intlk.Val_FirstOutTxt"},
             "Severity": "TAGPATH.Cfg_IntlkTripSeverity",
             "DataItem": "TAGPATH.Alm_IntlkTrip",                 
@@ -295,7 +295,7 @@ AOI_CONFIG = {
         },
         "IntlkTrip":{
             "Type": "Embedded",
-            "Msg": 'Interlock Trip - %Tag1',
+            "Msg": 'Interlock Trip - /*S:0%Tag1*/',
             "Params":{"Tag1":"_Intlk.Val_FirstOutTxt"},
             "Severity": "TAGPATH.Cfg_IntlkTripSeverity",
             "DataItem": "TAGPATH.Alm_IntlkTrip",                 
@@ -325,7 +325,7 @@ AOI_CONFIG = {
         },
         "IntlkTrip":{
             "Type": "Embedded",
-            "Msg": 'Interlock Trip - %Tag1',
+            "Msg": 'Interlock Trip - /*S:0%Tag1*/',
             "Params":{"Tag1":"_Intlk.Val_FirstOutTxt"},
             "Severity": "TAGPATH.Cfg_IntlkTripSeverity",
             "DataItem": "TAGPATH.Alm_IntlkTrip",                 
@@ -380,7 +380,7 @@ AOI_CONFIG = {
         },
         "IntlkTrip":{
             "Type": "Embedded",
-            "Msg": 'Interlock Trip - %Tag1',
+            "Msg": 'Interlock Trip - /*S:0%Tag1*/',
             "Params":{"Tag1":"_Intlk.Val_FirstOutTxt"},
             "Severity": "TAGPATH.Cfg_IntlkTripSeverity",
             "DataItem": "TAGPATH.Alm_IntlkTrip",                 
@@ -445,7 +445,7 @@ AOI_CONFIG = {
         },
         "IntlkTrip":{
             "Type": "Embedded",
-            "Msg": 'Interlock Trip - %Tag1',
+            "Msg": 'Interlock Trip - /*S:0%Tag1*/',
             "Params":{"Tag1":"_Intlk.Val_FirstOutTxt"},
             "Severity": "TAGPATH.Cfg_IntlkTripSeverity",
             "DataItem": "TAGPATH.Alm_IntlkTrip",                 
@@ -482,7 +482,7 @@ AOI_CONFIG = {
         },
         "IntlkTrip":{
             "Type": "Embedded",
-            "Msg": 'Interlock Trip - %Tag1',
+            "Msg": 'Interlock Trip - /*S:0%Tag1*/',
             "Params":{"Tag1":"_Intlk.Val_FirstOutTxt"},
             "Severity": "TAGPATH.Cfg_IntlkTripSeverity",
             "DataItem": "TAGPATH.Alm_IntlkTrip",                 
@@ -526,7 +526,7 @@ AOI_CONFIG = {
         },
         "IntlkTrip":{
             "Type": "Embedded",
-            "Msg": 'Interlock Trip - %Tag1',
+            "Msg": 'Interlock Trip - /*S:0%Tag1*/',
             "Params":{"Tag1":"_Intlk.Val_FirstOutTxt"},
             "Severity": "TAGPATH.Cfg_IntlkTripSeverity",
             "DataItem": "TAGPATH.Alm_IntlkTrip",                 
@@ -570,7 +570,7 @@ AOI_CONFIG = {
         },
         "IntlkTrip":{
             "Type": "Embedded",
-            "Msg": 'Interlock Trip - %Tag1',
+            "Msg": 'Interlock Trip - /*S:0%Tag1*/',
             "Params":{"Tag1":"_Intlk.Val_FirstOutTxt"},
             "Severity": "TAGPATH.Cfg_IntlkTripSeverity",
             "DataItem": "TAGPATH.Alm_IntlkTrip",                 
@@ -600,7 +600,7 @@ AOI_CONFIG = {
         },
         "IntlkTrip":{
             "Type": "Embedded",
-            "Msg": 'Interlock Trip - %Tag1',
+            "Msg": 'Interlock Trip - /*S:0%Tag1*/',
             "Params":{"Tag1":"_Intlk.Val_FirstOutTxt"},
             "Severity": "TAGPATH.Cfg_IntlkTripSeverity",
             "DataItem": "TAGPATH.Alm_IntlkTrip",                 
