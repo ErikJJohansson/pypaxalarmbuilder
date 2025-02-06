@@ -128,6 +128,81 @@ AOI_CONFIG = {
             "DataItem": "TAGPATH.Sts_SubstPV",                 
         }    
     },
+    "P_AInAdv": 
+    {
+        "Fail":{
+            "Name": "PLCNAME_TAGNAME_Alm_Fail",
+            "Type": "Embedded",
+            "Msg": 'Input bad or uncertain.  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Params":{"Tag1":".Val"},
+            "Severity": "TAGPATH.Cfg_FailSeverity",
+            "DataItem": "TAGPATH.Alm_Fail",
+        },
+        "HiHi":{
+            "Name": "PLCNAME_TAGNAME_Alm_HiHi",
+            "Type": "Embedded",
+            "Msg": 'High-High Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Params":{"Tag1":".Val"},
+            "Severity": "TAGPATH.Cfg_HiHiSeverity",
+            "DataItem": "TAGPATH.Alm_HiHi",
+        },
+        "Hi":{
+            "Name": "PLCNAME_TAGNAME_Alm_Hi",
+            "Type": "Embedded",
+            "Msg": 'High Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Params":{"Tag1":".Val"},
+            "Severity": "TAGPATH.Cfg_HiSeverity",
+            "DataItem": "TAGPATH.Alm_Hi",          
+        },
+        "Lo":{
+            "Name": "PLCNAME_TAGNAME_Alm_Lo",
+            "Type": "Embedded",
+            "Msg": 'Low Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Params":{"Tag1":".Val"},
+            "Severity": "TAGPATH.Cfg_LoSeverity",
+            "DataItem": "TAGPATH.Alm_Lo",               
+        },
+        "LoLo":{
+            "Name": "PLCNAME_TAGNAME_Alm_LoLo",
+            "Type": "Embedded",
+            "Msg": 'Low-Low Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Params":{"Tag1":".Val"},
+            "Severity": "TAGPATH.Cfg_LoLoSeverity",
+            "DataItem": "TAGPATH.Alm_LoLo",                   
+        },
+        "HiRoC":{
+            "Name": "PLCNAME_TAGNAME_Alm_HiRoC",
+            "Type": "Embedded",
+            "Msg": 'High Rate of Change Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Params":{"Tag1":".Val"},
+            "Severity": "TAGPATH.Cfg_HiRoCSeverity",
+            "DataItem": "TAGPATH.Alm_HiRoC",                   
+        },
+        "HiDev":{
+            "Name": "PLCNAME_TAGNAME_Alm_HiDev",
+            "Type": "Embedded",
+            "Msg": 'High Deviation Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Params":{"Tag1":".Val"},
+            "Severity": "TAGPATH.Cfg_HiDevSeverity",
+            "DataItem": "TAGPATH.Alm_HiDev",                   
+        },
+        "LoDev":{
+            "Name": "PLCNAME_TAGNAME_Alm_LoDev",
+            "Type": "Embedded",
+            "Msg": 'Low Deviation Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
+            "Params":{"Tag1":".Val"},
+            "Severity": "TAGPATH.Cfg_LoDevSeverity",
+            "DataItem": "TAGPATH.Alm_LoDev",                   
+        },
+        "Simulated":{
+            "Name": "PLCNAME_TAGNAME_Alm_Simulated",
+            "Type": "Tag",
+            "Msg": 'Input is being simulated. This can defeat interlocks and safety systems.',
+            "Params":{},
+            "Severity": str(SIMULATED_SEVERITY),
+            "DataItem": "TAGPATH.Sts_SubstPV",                 
+        }    
+    },
     "P_AInDual": {
         "Fail":{
             "Name": "PLCNAME_TAGNAME_Alm_Fail",
