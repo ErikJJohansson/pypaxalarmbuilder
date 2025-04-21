@@ -6,6 +6,7 @@ from itertools import product
 import re
 import FTAE
 import xmlschema
+import csv
 
 def validate_xml(xml_file, xsd_file):
     schema = xmlschema.XMLSchema(xsd_file)
@@ -50,8 +51,31 @@ def get_shortcut_name(device_shortcut):
     else:
         return ''
 
+# takes csv file as input that contains group names and ID's
+def create_alarmgroup_database_from_csv(csv_file):
+
+    alarm_dict = {}
+
+    with open(csv_file, newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            id = row["ID"]
+            name = row["Name"]
+            parent_id = row["Parent ID"]
+
+            alarm_dict[name] = {}
+            alarm_dict[name]['Name'] = name
+            alarm_dict[name]['groupID'] = str(id)
+            alarm_dict[name]['msg_index'] = str((int(id))*100000 + 1)
+            alarm_dict[name]['parentID'] = str(parent_id)
+
+    return alarm_dict
+
+
+
+
 # made this to keep track of indexes for alarms and whatnot
-def create_alarmgroup_database(plc_groupID, plc_name, plc_program_list):
+def create_alarmgroup_database_from_plc(plc_groupID, plc_name, plc_program_list):
     '''
     function to create a database of alarm groups
     
@@ -382,7 +406,14 @@ def main():
     
     print('Generating alarm group database')
     # create alarm group database
-    alarm_group_db = create_alarmgroup_database(plc_groupID,plc_name,plc_program_list)
+    #alarm_group_db = create_alarmgroup_database_from_plc(plc_groupID,plc_name,plc_program_list)
+    alarm_group_db = create_alarmgroup_database_from_csv("AlarmGroups.csv")
+
+    print(alarm_group_db)
+
+    exit()
+
+
 
     print('Generating FTAE XML file')
     # create version element and append it to the root
