@@ -63,11 +63,12 @@ def create_alarmgroup_database_from_csv(csv_file):
             name = row["Name"]
             parent_id = row["Parent ID"]
 
-            alarm_dict[name] = {}
-            alarm_dict[name]['Name'] = name
-            alarm_dict[name]['groupID'] = str(id)
-            alarm_dict[name]['msg_index'] = str((int(id))*100000 + 1)
-            alarm_dict[name]['parentID'] = str(parent_id)
+            # id is stored as a number inside the AOI's
+            alarm_dict[id] = {}
+            alarm_dict[id]['Name'] = name
+            alarm_dict[id]['groupID'] = str(id)
+            #alarm_dict[id]['msg_index'] = str((int(id))*100000 + 1)
+            alarm_dict[id]['parentID'] = str(parent_id)
 
     return alarm_dict
 
@@ -163,7 +164,7 @@ def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,alarm_type,de
     discreteelement = ET.SubElement(alarmelement, "DiscreteElement")
     discreteelement.tail = '\n'
 
-    dataitem_string = FTAE.AOI_CONFIG[aoi_type][alarm_tag]['DataItem']
+    dataitem_string = FTAE.ALARM_DEFINITIONS[alarm_tag]['DataItem']
 
     dataitem = ET.SubElement(discreteelement, "DataItem")
     dataitem.text = dataitem_string.replace("TAGPATH",tag_path)
@@ -178,7 +179,7 @@ def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,alarm_type,de
 
 
     # Configure Alarm Severity
-    severity_string = FTAE.AOI_CONFIG[aoi_type][alarm_tag]['Severity']
+    severity_string = FTAE.ALARM_DEFINITIONS[alarm_tag]['Severity']
     severity = ET.SubElement(discreteelement, "Severity")
     severity.text = severity_string.replace("TAGPATH",tag_path)
     severity.tail = '\n'
@@ -411,7 +412,7 @@ def main():
 
     print(alarm_group_db)
 
-    exit()
+    #exit()
 
 
 
@@ -482,6 +483,11 @@ def main():
     alarmelements = ET.SubElement(writeconfig_command, "FTAlarmElements", attrib={"shelveMaxValue":str(FTAE.SHELVE_MAX_VALUE)})
     alarmelements.tail = '\n'
 
+    # write generic alarm messages
+    for alarm_type in FTAE.ALARM_DEFINITIONS.keys():
+        write_msg(ET,messages,FTAE.ALARM_DEFINITIONS[alarm_type]['MsgID'],FTAE.ALARM_DEFINITIONS[alarm_type]['Msg'])
+
+
     # loop through each AOI type and write to xml
     for aoi_type in FTAE.AOI_CONFIG.keys():
         # get list of tags for each AOI typ
@@ -500,15 +506,15 @@ def main():
                 # get the P&ID tag and description from PLC
                 # this is used to make the messages for the alarms
          
-                aoi_cfg_tag = plc.read(aoi_instance + '.Cfg_Tag')[1]
-                aoi_cfg_desc = plc.read(aoi_instance + '.Cfg_Desc')[1]
+                #aoi_cfg_tag = plc.read(aoi_instance + '.Cfg_Tag')[1]
+                #aoi_cfg_desc = plc.read(aoi_instance + '.Cfg_Desc')[1]
 
                 # if the tag is empty, set it to empty string
-                if aoi_cfg_tag == None:
-                    aoi_cfg_tag = aoi_instance
+                #if aoi_cfg_tag == None:
+                #    aoi_cfg_tag = aoi_instance
 
-                if aoi_cfg_desc == None:
-                    aoi_cfg_desc = ''
+                #if aoi_cfg_desc == None:
+                #    aoi_cfg_desc = ''
 
                 # list of tags for the AOI instance to be added to Tag poll group
                 aoi_tag_list = []
@@ -517,30 +523,42 @@ def main():
                 aoi_program_name = get_program_name_for_tag(aoi_instance)
 
                 # maybe makes things easier to read
-                aoi_msg_start = plc_name + ' - ' + aoi_cfg_tag + ' - ' 
-                if aoi_cfg_desc != '':
-                    aoi_msg_start += aoi_cfg_desc + ' - '
+                #aoi_msg_start = plc_name + ' - ' + aoi_cfg_tag + ' - ' 
+                #if aoi_cfg_desc != '':
+                #    aoi_msg_start += aoi_cfg_desc + ' - '
 
                 # loop through each alarm instance for the AOI type
                 for alarm_instance in alarms_for_aoi_type:
 
                     # get the alarm group ID and message index from the database
-                    alarm_message_index = alarm_group_db[aoi_program_name]['msg_index']
-                    alarm_groupID = alarm_group_db[aoi_program_name]['groupID']
+                    #alarm_message_index = alarm_group_db[aoi_program_name]['msg_index']
+                    #alarm_groupID = alarm_group_db[aoi_program_name]['groupID']
+
+                    alarm_message_index = FTAE.ALARM_DEFINITIONS[alarm_instance]['MsgID']
+                    
+                    
+                    alarm_groupID   = plc.read(aoi_instance + '.Cfg_AlmGrpID')[1]
+                    
+                    if alarm_groupID == None:
+                        alarm_groupID = 0
+
 
                     # get the alarm type, Embedded, Tag or P_Alarm
-                    alarm_type = FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Type']
+                    #alarm_type = FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Type']
+                    alarm_type = FTAE.ALARM_DEFINITIONS[alarm_instance]['Type']
 
                     # add alarm message to messages
-                    write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Msg'])
+                    #write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Msg'])
+                    #write_msg(ET,messages,alarm_message_index,FTAE.ALARM_DEFINITIONS[alarm_instance]['Msg'])
 
                     # write alarm and get all uses tags and add to tag list
-                    tags_to_add = write_alarm(ET,alarmelements,plc_name,aoi_type,aoi_instance,alarm_instance,alarm_type,device_shortcut,alarm_groupID,alarm_message_index,FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Params'])
+                    #tags_to_add = write_alarm(ET,alarmelements,plc_name,aoi_type,aoi_instance,alarm_instance,alarm_type,device_shortcut,alarm_groupID,alarm_message_index,FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Params'])
+                    tags_to_add = write_alarm(ET,alarmelements,plc_name,aoi_type,aoi_instance,alarm_instance,alarm_type,device_shortcut,alarm_groupID,alarm_message_index,FTAE.ALARM_DEFINITIONS[alarm_instance]['Params'])
                     aoi_tag_list += tags_to_add
 
                     # update the message index
-                    index_update = int(alarm_message_index) + 1
-                    alarm_group_db[aoi_program_name]['msg_index'] = str(index_update)
+                    #index_update = int(alarm_message_index) + 1
+                    #alarm_group_db[aoi_program_name]['msg_index'] = str(index_update)
 
                 # add all tags to tag group
                 for tag in aoi_tag_list:
