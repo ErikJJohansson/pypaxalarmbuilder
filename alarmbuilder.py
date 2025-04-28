@@ -56,21 +56,23 @@ def create_alarmgroup_database_from_csv(csv_file):
 
     alarm_dict = {}
 
-    with open(csv_file, newline='', encoding='utf-8') as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            id = row["ID"]
-            name = row["Name"]
-            parent_id = row["Parent ID"]
+    try:
+        with open(csv_file, newline='', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                id = row["ID"]
+                name = row["Name"]
+                parent_id = row["Parent ID"]
 
-            # id is stored as a number inside the AOI's
-            alarm_dict[id] = {}
-            alarm_dict[id]['Name'] = name
-            alarm_dict[id]['groupID'] = str(id)
-            #alarm_dict[id]['msg_index'] = str((int(id))*100000 + 1)
-            alarm_dict[id]['parentID'] = str(parent_id)
+                # id is stored as a number inside the AOI's
+                alarm_dict[id] = {}
+                alarm_dict[id]['Name'] = name
+                alarm_dict[id]['groupID'] = str(id)
+                alarm_dict[id]['parentID'] = str(parent_id)
 
-    return alarm_dict
+        return alarm_dict
+    except:
+        return False
 
 
 
@@ -360,6 +362,7 @@ def main():
     # will be replaced with PLC name
     default_deviceshortcut = ''
     default_groupID = 1
+    default_csvfile = 'Sample Files\\AlarmGroups.csv'
 
     # Parse arguments
     parser = argparse.ArgumentParser(
@@ -368,17 +371,20 @@ def main():
     
     # Add command-line arguments
     parser.add_argument('commpath', help='Path to PLC')
-    parser.add_argument('groupID', nargs='?', default=default_groupID,help='PLC Group ID for alarms 1-9')
     parser.add_argument('deviceshortcut', nargs='?', default=default_deviceshortcut,help='Shortcut in FTView')
-                                       
+    parser.add_argument('csvfile', nargs='?', default=default_csvfile,help='Path to csv containing group IDs')
+
+    #parser.add_argument('groupID', nargs='?', default=default_groupID,help='PLC Group ID for alarms 1-9')
+
     args = parser.parse_args()
 
     # Access the parsed arguments
     commpath = args.commpath
     #appname = args.appname
     #servername = args.servername
+    csvfile = args.csvfile
     device_shortcut = args.deviceshortcut
-    plc_groupID = int(args.groupID)
+    #plc_groupID = int(args.groupID)
 
     # open connection to PLC
 
@@ -396,24 +402,25 @@ def main():
 
     # if the shortcut was left blank, create it and spit out a default message
     if device_shortcut == '':
-        device_shortcut = '/::[' + plc_name + ']'
+        device_shortcut = '/DATA::[' + plc_name + ']'
 
         print('No FTView device shortcut specified. Using PLC name. Path is: ' + device_shortcut)
 
     # get list of programs, this will be used to separate into different alarm groups
-    plc_program_list = plc.info['programs'].keys()
+    #plc_program_list = plc.info['programs'].keys()
 
-    plc_shortcut_name = get_shortcut_name(device_shortcut)
+    #plc_shortcut_name = get_shortcut_name(device_shortcut)
     
     print('Generating alarm group database')
     # create alarm group database
     #alarm_group_db = create_alarmgroup_database_from_plc(plc_groupID,plc_name,plc_program_list)
-    alarm_group_db = create_alarmgroup_database_from_csv("AlarmGroups.csv")
+    alarm_group_db = create_alarmgroup_database_from_csv(csvfile)
 
-    print(alarm_group_db)
-
-    #exit()
-
+    # error checking is handled inside csv function
+    if alarm_group_db == False:
+        print('Unable to open csv file ' + csvfile)
+        plc.close()
+        exit()
 
 
     print('Generating FTAE XML file')
@@ -575,7 +582,7 @@ def main():
 
     # add plc name to file and save to new file
     #outfile = appname + '_' + servername + '_AlarmExport.' + 'xml'
-    outfile = plc_name + '_FTAE_AlarmExport.' + 'xml'
+    outfile = plc_name + '_FTAE_AlarmImportFile.' + 'xml'
     # Write the XML tree to a file with UTF-16 encoding
     tree.write(outfile, encoding="utf-16", xml_declaration=True,short_empty_elements=False)
 

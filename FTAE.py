@@ -242,7 +242,7 @@ ALARM_DEFINITIONS = {
     "OffFail":{
         "Name": "PLCNAME_TAGNAME_Alm_OffFail",        
         "Type": "Embedded",
-        "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Target Disagree - Off Failure - Device feedback does not confirm the device is OFF within the configured time',
+        "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Off Failure - Device feedback does not confirm the device is OFF within the configured time',
         "MsgID": 10022,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_OffFailSeverity",
@@ -251,7 +251,7 @@ ALARM_DEFINITIONS = {
     "OnFail":{
         "Name": "PLCNAME_TAGNAME_Alm_OnFail",
         "Type": "Embedded",
-        "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Target Disagree - On Failure - Device feedback does not confirm the device is ON within the configured time',
+        "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - On Failure - Device feedback does not confirm the device is ON within the configured time',
         "MsgID": 10023,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_OnFailSeverity",
@@ -301,7 +301,25 @@ ALARM_DEFINITIONS = {
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_CantStopSeverity",
         "DataItem": "TAGPATH.Alm_CantStop",              
+    },
+    "Trip":{
+        "Name": "PLCNAME_TAGNAME_Alm_Trip",
+        "Type": "Embedded",
+        "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Device has tripped',
+        "MsgID": 10032,
+        "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
+        "Severity": "TAGPATH.Cfg_TripSeverity",
+        "DataItem": "TAGPATH.Alm_Trip",              
     },  
+    "Warn":{
+        "Name": "PLCNAME_TAGNAME_Alm_Warn",
+        "Type": "Embedded",
+        "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Device has warning',
+        "MsgID": 10033,
+        "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
+        "Severity": "TAGPATH.Cfg_WarnSeverity",
+        "DataItem": "TAGPATH.Alm_Warn",              
+    }, 
 }
 
 
@@ -387,6 +405,11 @@ AOI_CONFIG = {
         "OffFail":{},
         "OnFail":{},
         "Bypassed":{},
+    },
+    'P_E300Ovld':{
+        "IOFault":{},
+        "Trip":{},
+        "Warn":{},
     },
     'P_PIDE': {
         "Fail":{},
