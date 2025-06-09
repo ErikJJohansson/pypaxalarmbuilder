@@ -40,6 +40,7 @@ ALARM_DEFINITIONS = {
         "Params": {},
         "Severity": str(MODFAULT_SEVERITY),
         "DataItem": "TAGPATH.Sts_IOFault",
+        "Enabled" : False, 
     },
     "P_Alarm":{
         "Name": "PLCNAME_TAGNAME_Alm",
@@ -48,7 +49,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10002,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Cond"},
         "Severity": "TAGPATH.Cfg_Severity",
-        "DataItem": "TAGPATH.Alm",  
+        "DataItem": "TAGPATH.Alm", 
+        "Enabled" : True,  
     },
     "Bypassed":{
         "Type": "Tag",
@@ -56,7 +58,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10003,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": str(BYPASSED_SEVERITY),
-        "DataItem": "TAGPATH.Sts_BypActive",              
+        "DataItem": "TAGPATH.Sts_BypActive",
+        "Enabled" : True,               
     },
     "Simulated":{
         "Name": "PLCNAME_TAGNAME_Alm_Simulated",
@@ -66,7 +69,8 @@ ALARM_DEFINITIONS = {
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Cmd": "NavToFaceplate TAGPATH PROGPATH",
         "Severity": str(SIMULATED_SEVERITY),
-        "DataItem": "TAGPATH.Sts_SubstPV",                   
+        "DataItem": "TAGPATH.Sts_SubstPV",
+        "Enabled" : True,                    
     },
     "Fail":{
         "Name": "PLCNAME_TAGNAME_Alm_Fail",
@@ -76,6 +80,7 @@ ALARM_DEFINITIONS = {
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
         "Severity": "TAGPATH.Cfg_FailSeverity",
         "DataItem": "TAGPATH.Alm_Fail",
+        "Enabled" : False, 
     },
     "HiHi":{
         "Name": "PLCNAME_TAGNAME_Alm_HiHi",
@@ -85,6 +90,7 @@ ALARM_DEFINITIONS = {
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
         "Severity": "TAGPATH.Cfg_HiHiSeverity",
         "DataItem": "TAGPATH.Alm_HiHi",
+        "Enabled" : True, 
     },
     "Hi":{
         "Name": "PLCNAME_TAGNAME_Alm_Hi",
@@ -93,7 +99,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10007,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
         "Severity": "TAGPATH.Cfg_HiSeverity",
-        "DataItem": "TAGPATH.Alm_Hi",          
+        "DataItem": "TAGPATH.Alm_Hi",
+        "Enabled" : True,           
     },
     "Lo":{
         "Name": "PLCNAME_TAGNAME_Alm_Lo",
@@ -102,7 +109,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10008,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
         "Severity": "TAGPATH.Cfg_LoSeverity",
-        "DataItem": "TAGPATH.Alm_Lo",               
+        "DataItem": "TAGPATH.Alm_Lo",
+        "Enabled" : True,                
     },
     "LoLo":{
         "Name": "PLCNAME_TAGNAME_Alm_LoLo",
@@ -111,7 +119,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10009,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
         "Severity": "TAGPATH.Cfg_LoLoSeverity",
-        "DataItem": "TAGPATH.Alm_LoLo",                   
+        "DataItem": "TAGPATH.Alm_LoLo",
+        "Enabled" : True,                    
     },
     "HiRoC":{
         "Name": "PLCNAME_TAGNAME_Alm_HiRoC",
@@ -120,7 +129,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10010,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
         "Severity": "TAGPATH.Cfg_HiRoCSeverity",
-        "DataItem": "TAGPATH.Alm_HiRoC",                   
+        "DataItem": "TAGPATH.Alm_HiRoC",
+        "Enabled" : True,                    
     },
     "HiDev":{
         "Name": "PLCNAME_TAGNAME_Alm_HiDev",
@@ -129,7 +139,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10011,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
         "Severity": "TAGPATH.Cfg_HiDevSeverity",
-        "DataItem": "TAGPATH.Alm_HiDev",                   
+        "DataItem": "TAGPATH.Alm_HiDev",
+        "Enabled" : True,                    
     },
     "HiHiDev":{
         "Name": "PLCNAME_TAGNAME_Alm_HiHiDev",
@@ -138,7 +149,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10030,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_HiHiDevSeverity",
-        "DataItem": "TAGPATH.Alm_HiHiDev",                   
+        "DataItem": "TAGPATH.Alm_HiHiDev",
+        "Enabled" : True,                    
     },
     "LoDev":{
         "Name": "PLCNAME_TAGNAME_Alm_LoDev",
@@ -147,7 +159,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10012,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
         "Severity": "TAGPATH.Cfg_LoDevSeverity",
-        "DataItem": "TAGPATH.Alm_LoDev",                   
+        "DataItem": "TAGPATH.Alm_LoDev",
+        "Enabled" : True,                    
     },
     "LoLoDev":{
         "Name": "PLCNAME_TAGNAME_Alm_LoLoDev",
@@ -156,7 +169,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10031,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_LoLoDevSeverity",
-        "DataItem": "TAGPATH.Alm_LoLoDev",                   
+        "DataItem": "TAGPATH.Alm_LoLoDev",
+        "Enabled" : True,                    
     },
     "Diff":{
         "Name": "PLCNAME_TAGNAME_Alm_LoLo",
@@ -165,7 +179,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10013,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val_Diff"},
         "Severity": "TAGPATH.Cfg_DiffSeverity",
-        "DataItem": "TAGPATH.Alm_Diff",                   
+        "DataItem": "TAGPATH.Alm_Diff",
+        "Enabled" : True,                    
     },
     "NoneGood":{
         "Name": "PLCNAME_TAGNAME_Alm_NoneGood",
@@ -174,7 +189,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10014,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val_PVA","Tag4":".Val_PVB"},
         "Severity": "TAGPATH.Cfg_NoneGoodSeverity",
-        "DataItem": "TAGPATH.Alm_NoneGood",                               
+        "DataItem": "TAGPATH.Alm_NoneGood",
+        "Enabled" : True,                                
     },
     "OneGood":{
         "Name": "PLCNAME_TAGNAME_Alm_OneGood",
@@ -183,7 +199,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10015,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val_PVA","Tag4":".Val_PVB"},
         "Severity": "TAGPATH.Cfg_OneGoodSeverity",
-        "DataItem": "TAGPATH.Alm_OneGood",                  
+        "DataItem": "TAGPATH.Alm_OneGood",
+        "Enabled" : True,                   
     },
     "IOFault":{
         "Name": "PLCNAME_TAGNAME_Alm_IOFault",
@@ -192,7 +209,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10016,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_IOFaultSeverity",
-        "DataItem": "TAGPATH.Alm_IOFault",                   
+        "DataItem": "TAGPATH.Alm_IOFault",
+        "Enabled" : False,                    
     },
     "IntlkTrip":{
         "Name": "PLCNAME_TAGNAME_Alm_IntlkTrip",
@@ -201,7 +219,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10017,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":"_Intlk.Val_FirstOutTxt"},
         "Severity": "TAGPATH.Cfg_IntlkTripSeverity",
-        "DataItem": "TAGPATH.Alm_IntlkTrip",                 
+        "DataItem": "TAGPATH.Alm_IntlkTrip",
+        "Enabled" : True,                  
     },
     "ActuatorFault":{
         "Name": "PLCNAME_TAGNAME_Alm_ActuatorFault",
@@ -210,7 +229,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10018,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val_Fault"},
         "Severity": "TAGPATH.Cfg_ActuatorFaultSeverity",
-        "DataItem": "TAGPATH.Alm_ActuatorFault",             
+        "DataItem": "TAGPATH.Alm_ActuatorFault",
+        "Enabled" : True,              
     },
     "FullStall":{
         "Name": "PLCNAME_TAGNAME_Alm_FullStall",
@@ -220,6 +240,7 @@ ALARM_DEFINITIONS = {
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_FullStallSeverity",
         "DataItem": "TAGPATH.Alm_FullStall",
+        "Enabled" : True, 
     },
     "TransitStall":{
         "Name": "PLCNAME_TAGNAME_Alm_TransitStall",
@@ -229,6 +250,7 @@ ALARM_DEFINITIONS = {
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_TransitStallSeverity",
         "DataItem": "TAGPATH.Alm_TransitStall",
+        "Enabled" : True, 
     },
     "TgtDisagree":{
         "Name": "PLCNAME_TAGNAME_Alm_TgtDisagree",
@@ -237,7 +259,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10021,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_TgtDisagreeSeverity",
-        "DataItem": "TAGPATH.Alm_TgtDisagree",                 
+        "DataItem": "TAGPATH.Alm_TgtDisagree",
+        "Enabled" : True,                  
     },
     "OffFail":{
         "Name": "PLCNAME_TAGNAME_Alm_OffFail",        
@@ -246,7 +269,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10022,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_OffFailSeverity",
-        "DataItem": "TAGPATH.Alm_OffFail",              
+        "DataItem": "TAGPATH.Alm_OffFail",
+        "Enabled" : True,               
     },
     "OnFail":{
         "Name": "PLCNAME_TAGNAME_Alm_OnFail",
@@ -255,7 +279,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10023,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_OnFailSeverity",
-        "DataItem": "TAGPATH.Alm_OnFail",                
+        "DataItem": "TAGPATH.Alm_OnFail",
+        "Enabled" : True,                 
     },
     "FailToStart":{
         "Name": "PLCNAME_TAGNAME_Alm_FailToStart",
@@ -264,7 +289,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10024,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_FailToStartSeverity",
-        "DataItem": "TAGPATH.Alm_FailToStart",                
+        "DataItem": "TAGPATH.Alm_FailToStart",
+        "Enabled" : True,                 
     },
     "FailToStop":{
         "Name": "PLCNAME_TAGNAME_Alm_FailToStop",
@@ -273,7 +299,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10025,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_FailToStopSeverity",
-        "DataItem": "TAGPATH.Alm_FailToStop",                
+        "DataItem": "TAGPATH.Alm_FailToStop",
+        "Enabled" : True,                 
     },
     "DriveFault":{
         "Name": "PLCNAME_TAGNAME_Alm_DriveFault",
@@ -282,7 +309,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10026,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_DriveFaultSeverity",
-        "DataItem": "TAGPATH.Alm_DriveFault",  
+        "DataItem": "TAGPATH.Alm_DriveFault",
+        "Enabled" : False,   
     },
     "CantStart":{
         "Name": "PLCNAME_TAGNAME_Alm_CantStart",
@@ -291,7 +319,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10027,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_CantStartSeverity",
-        "DataItem": "TAGPATH.Alm_CantStart",                 
+        "DataItem": "TAGPATH.Alm_CantStart",
+        "Enabled" : True,                  
     },
     "CantStop":{
         "Name": "PLCNAME_TAGNAME_Alm_CantStop",
@@ -300,7 +329,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10028,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_CantStopSeverity",
-        "DataItem": "TAGPATH.Alm_CantStop",              
+        "DataItem": "TAGPATH.Alm_CantStop",
+        "Enabled" : True,               
     },
     "Trip":{
         "Name": "PLCNAME_TAGNAME_Alm_Trip",
@@ -309,7 +339,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10032,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_TripSeverity",
-        "DataItem": "TAGPATH.Alm_Trip",              
+        "DataItem": "TAGPATH.Alm_Trip", 
+        "Enabled" : True,              
     },  
     "Warn":{
         "Name": "PLCNAME_TAGNAME_Alm_Warn",
@@ -318,7 +349,8 @@ ALARM_DEFINITIONS = {
         "MsgID": 10033,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_WarnSeverity",
-        "DataItem": "TAGPATH.Alm_Warn",              
+        "DataItem": "TAGPATH.Alm_Warn",
+        "Enabled" : True,               
     }, 
 }
 

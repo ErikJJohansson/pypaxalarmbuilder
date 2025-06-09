@@ -132,7 +132,7 @@ def write_msg(ET,parent,msg_id,msg_text):
     msg_txt.tail = '\n'
 
 # make a  function so its easier to read
-def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,alarm_type,device_shortcut, group_id,message_id,param_list):
+def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,alarm_type,device_shortcut, group_id,message_id,param_list, in_use):
 
     tag_list = []
 
@@ -159,8 +159,14 @@ def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,alarm_type,de
         program_path = device_shortcut
         tag_path = device_shortcut + aoi_instance
 
+    # so function can disable alarms
+    if in_use:
+        in_use_text = "Yes"
+    else:
+        in_use_text = "No"
+    
     # create alarm structure
-    alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": alarm_name,"inuse":"Yes","latched":"false","ackRequired":"true","style":"Discrete"})
+    alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": alarm_name,"inuse":in_use_text,"latched":"false","ackRequired":"true","style":"Discrete"})
     alarmelement.tail = '\n'
 
     discreteelement = ET.SubElement(alarmelement, "DiscreteElement")
@@ -554,13 +560,10 @@ def main():
                     #alarm_type = FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Type']
                     alarm_type = FTAE.ALARM_DEFINITIONS[alarm_instance]['Type']
 
-                    # add alarm message to messages
-                    #write_msg(ET,messages,alarm_message_index,aoi_msg_start + FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Msg'])
-                    #write_msg(ET,messages,alarm_message_index,FTAE.ALARM_DEFINITIONS[alarm_instance]['Msg'])
+                    alarm_enabled = FTAE.ALARM_DEFINITIONS[alarm_instance]['Enabled']
 
-                    # write alarm and get all uses tags and add to tag list
-                    #tags_to_add = write_alarm(ET,alarmelements,plc_name,aoi_type,aoi_instance,alarm_instance,alarm_type,device_shortcut,alarm_groupID,alarm_message_index,FTAE.AOI_CONFIG[aoi_type][alarm_instance]['Params'])
-                    tags_to_add = write_alarm(ET,alarmelements,plc_name,aoi_type,aoi_instance,alarm_instance,alarm_type,device_shortcut,alarm_groupID,alarm_message_index,FTAE.ALARM_DEFINITIONS[alarm_instance]['Params'])
+
+                    tags_to_add = write_alarm(ET,alarmelements,plc_name,aoi_type,aoi_instance,alarm_instance,alarm_type,device_shortcut,alarm_groupID,alarm_message_index,FTAE.ALARM_DEFINITIONS[alarm_instance]['Params'],alarm_enabled)
                     aoi_tag_list += tags_to_add
 
                     # update the message index
