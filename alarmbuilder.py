@@ -368,7 +368,7 @@ def main():
     # will be replaced with PLC name
     default_deviceshortcut = ''
     default_groupID = 1
-    default_csvfile = 'Sample Files\\AlarmGroups.csv'
+    default_csvfile = 'Config\\AlarmGroups.csv'
 
     # Parse arguments
     parser = argparse.ArgumentParser(
