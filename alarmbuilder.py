@@ -160,10 +160,12 @@ def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,alarm_type,de
         tag_path = device_shortcut + aoi_instance
 
     # so function can disable alarms
-    if in_use:
+    if FTAE.ALARM_DEFINITIONS[alarm_tag]['Enabled']:
         in_use_text = "Yes"
     else:
         in_use_text = "No"
+
+    #in_use_text = FTAE.ALARM_DEFINITIONS[alarm_tag]['Enabled']
     
     # create alarm structure
     alarmelement = ET.SubElement(parent, "FTAlarmElement", attrib={"name": alarm_name,"inuse":in_use_text,"latched":"false","ackRequired":"true","style":"Discrete"})
@@ -182,7 +184,7 @@ def write_alarm(ET,parent,plc_name,aoi_type,aoi_instance,alarm_tag,alarm_type,de
     tag_list.append(dataitem.text)
 
     style = ET.SubElement(discreteelement, "Style")
-    style.text = "DiscreteTrue"
+    style.text = FTAE.ALARM_DEFINITIONS[alarm_tag]['Style']
     style.tail = '\n'
 
 

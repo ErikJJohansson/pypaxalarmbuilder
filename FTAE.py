@@ -26,15 +26,17 @@ SHELVE_MAX_VALUE = 480
 
 DETECTOR_COMMAND = "FTAeDetectorCommand"
 
-SIMULATED_SEVERITY = 101
-BYPASSED_SEVERITY = 101
-MODFAULT_SEVERITY = 501
+SIMULATED_SEVERITY  = 101
+BYPASSED_SEVERITY   = 101
+MODFAULT_SEVERITY   = 501
+SAFETY_SEVERITY     = 901
 
 # Alarms are repeated across many AOI's
 ALARM_DEFINITIONS = {
     "ModuleFaulted": {
         "Name": "PLCNAME_TAGNAME_Alm_ModuleFaulted",
         "Type": "Tag",
+        "Style": "DiscreteTrue",
         "Msg": "Module is in faulted state",
         "MsgID": 10001,
         "Params": {},
@@ -45,6 +47,7 @@ ALARM_DEFINITIONS = {
     "P_Alarm":{
         "Name": "PLCNAME_TAGNAME_Alm",
         "Type": "P_Alarm",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/',
         "MsgID": 10002,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Cond"},
@@ -53,7 +56,9 @@ ALARM_DEFINITIONS = {
         "Enabled" : True,  
     },
     "Bypassed":{
+        "Name": "PLCNAME_TAGNAME_Alm_BypassEnabled",
         "Type": "Tag",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Permissive and interlock are being bypassed.',
         "MsgID": 10003,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -64,6 +69,7 @@ ALARM_DEFINITIONS = {
     "Simulated":{
         "Name": "PLCNAME_TAGNAME_Alm_Simulated",
         "Type": "Tag",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Input is being simulated. This can defeat interlocks and safety systems.',
         "MsgID": 10004,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -75,6 +81,7 @@ ALARM_DEFINITIONS = {
     "Fail":{
         "Name": "PLCNAME_TAGNAME_Alm_Fail",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg":'/*S:0%Tag1*/ - /*S:0%Tag2*/ - Input bad or uncertain. Val=/*N:5 %Tag3 NOFILL DP:1*/;',
         "MsgID": 10005,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
@@ -85,6 +92,7 @@ ALARM_DEFINITIONS = {
     "HiHi":{
         "Name": "PLCNAME_TAGNAME_Alm_HiHi",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - High-High Alarm;  Val=/*N:5 %Tag3 NOFILL DP:1*/;',
         "MsgID": 10006,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
@@ -95,6 +103,7 @@ ALARM_DEFINITIONS = {
     "Hi":{
         "Name": "PLCNAME_TAGNAME_Alm_Hi",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - High Alarm;  Val=/*N:5 %Tag3 NOFILL DP:1*/;',
         "MsgID": 10007,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
@@ -105,6 +114,7 @@ ALARM_DEFINITIONS = {
     "Lo":{
         "Name": "PLCNAME_TAGNAME_Alm_Lo",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Low Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
         "MsgID": 10008,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
@@ -115,6 +125,7 @@ ALARM_DEFINITIONS = {
     "LoLo":{
         "Name": "PLCNAME_TAGNAME_Alm_LoLo",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Low-Low Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
         "MsgID": 10009,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
@@ -125,6 +136,7 @@ ALARM_DEFINITIONS = {
     "HiRoC":{
         "Name": "PLCNAME_TAGNAME_Alm_HiRoC",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - High Rate of Change Alarm; Val=/*N:5 %Tag3 NOFILL DP:1*/;',
         "MsgID": 10010,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
@@ -135,6 +147,7 @@ ALARM_DEFINITIONS = {
     "HiDev":{
         "Name": "PLCNAME_TAGNAME_Alm_HiDev",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - High Deviation Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
         "MsgID": 10011,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
@@ -145,6 +158,7 @@ ALARM_DEFINITIONS = {
     "HiHiDev":{
         "Name": "PLCNAME_TAGNAME_Alm_HiHiDev",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - High-High Deviation Alarm',
         "MsgID": 10030,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -155,6 +169,7 @@ ALARM_DEFINITIONS = {
     "LoDev":{
         "Name": "PLCNAME_TAGNAME_Alm_LoDev",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Low Deviation Alarm;  Val=/*N:5 %Tag1 NOFILL DP:1*/;',
         "MsgID": 10012,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val"},
@@ -165,6 +180,7 @@ ALARM_DEFINITIONS = {
     "LoLoDev":{
         "Name": "PLCNAME_TAGNAME_Alm_LoLoDev",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Low-Low Deviation Alarm',
         "MsgID": 10031,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -175,6 +191,7 @@ ALARM_DEFINITIONS = {
     "Diff":{
         "Name": "PLCNAME_TAGNAME_Alm_LoLo",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Differential Limit Exceeded; Val_Diff=/*N:5 %Tag3 NOFILL DP:0*/',
         "MsgID": 10013,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val_Diff"},
@@ -185,6 +202,7 @@ ALARM_DEFINITIONS = {
     "NoneGood":{
         "Name": "PLCNAME_TAGNAME_Alm_NoneGood",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - PVA and PVB Both Bad Quality;  Val_PVA=/*N:5 %Tag3 NOFILL DP:1*/; Val_PVB=/*N:5 %Tag4 NOFILL DP:1*/;',
         "MsgID": 10014,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val_PVA","Tag4":".Val_PVB"},
@@ -195,6 +213,7 @@ ALARM_DEFINITIONS = {
     "OneGood":{
         "Name": "PLCNAME_TAGNAME_Alm_OneGood",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - PVA and PVB One Bad Quality;  Val_PVA=/*N:5 %Tag3 NOFILL DP:1*/; Val_PVB=/*N:5 %Tag4 NOFILL DP:1*/;',
         "MsgID": 10015,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val_PVA","Tag4":".Val_PVB"},
@@ -205,6 +224,7 @@ ALARM_DEFINITIONS = {
     "IOFault":{
         "Name": "PLCNAME_TAGNAME_Alm_IOFault",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - IO Fault',
         "MsgID": 10016,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -215,6 +235,7 @@ ALARM_DEFINITIONS = {
     "IntlkTrip":{
         "Name": "PLCNAME_TAGNAME_Alm_IntlkTrip",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Interlock Trip - /*S:20%Tag3*/',
         "MsgID": 10017,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":"_Intlk.Val_FirstOutTxt"},
@@ -225,6 +246,7 @@ ALARM_DEFINITIONS = {
     "ActuatorFault":{
         "Name": "PLCNAME_TAGNAME_Alm_ActuatorFault",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Actuator fault.  Val_Fault=/*S:0%Tag1*/;',
         "MsgID": 10018,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc","Tag3":".Val_Fault"},
@@ -235,6 +257,7 @@ ALARM_DEFINITIONS = {
     "FullStall":{
         "Name": "PLCNAME_TAGNAME_Alm_FullStall",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Full Stall - Valve did not move',
         "MsgID": 10019,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -245,6 +268,7 @@ ALARM_DEFINITIONS = {
     "TransitStall":{
         "Name": "PLCNAME_TAGNAME_Alm_TransitStall",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Transit Stall - Valve did not move to target position',
         "MsgID": 10020,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -255,6 +279,7 @@ ALARM_DEFINITIONS = {
     "TgtDisagree":{
         "Name": "PLCNAME_TAGNAME_Alm_TgtDisagree",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Target Disagree - PV Does Not Match Target',
         "MsgID": 10021,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -265,6 +290,7 @@ ALARM_DEFINITIONS = {
     "OffFail":{
         "Name": "PLCNAME_TAGNAME_Alm_OffFail",        
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Off Failure - Device feedback does not confirm the device is OFF within the configured time',
         "MsgID": 10022,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -275,6 +301,7 @@ ALARM_DEFINITIONS = {
     "OnFail":{
         "Name": "PLCNAME_TAGNAME_Alm_OnFail",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - On Failure - Device feedback does not confirm the device is ON within the configured time',
         "MsgID": 10023,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -285,6 +312,7 @@ ALARM_DEFINITIONS = {
     "FailToStart":{
         "Name": "PLCNAME_TAGNAME_Alm_FailToStart",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Fail to start',
         "MsgID": 10024,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -295,6 +323,7 @@ ALARM_DEFINITIONS = {
     "FailToStop":{
         "Name": "PLCNAME_TAGNAME_Alm_FailToStop",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Fail to stop',
         "MsgID": 10025,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -305,6 +334,7 @@ ALARM_DEFINITIONS = {
     "DriveFault":{
         "Name": "PLCNAME_TAGNAME_Alm_DriveFault",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Drive Fault',
         "MsgID": 10026,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -315,6 +345,7 @@ ALARM_DEFINITIONS = {
     "CantStart":{
         "Name": "PLCNAME_TAGNAME_Alm_CantStart",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Cannot start. No motors available to start',
         "MsgID": 10027,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -325,6 +356,7 @@ ALARM_DEFINITIONS = {
     "CantStop":{
         "Name": "PLCNAME_TAGNAME_Alm_CantStop",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Cannot stop. No motors available to stop',
         "MsgID": 10028,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -335,6 +367,7 @@ ALARM_DEFINITIONS = {
     "Trip":{
         "Name": "PLCNAME_TAGNAME_Alm_Trip",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Device has tripped',
         "MsgID": 10032,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
@@ -345,13 +378,122 @@ ALARM_DEFINITIONS = {
     "Warn":{
         "Name": "PLCNAME_TAGNAME_Alm_Warn",
         "Type": "Embedded",
+        "Style": "DiscreteTrue",
         "Msg": '/*S:0%Tag1*/ - /*S:0%Tag2*/ - Device has warning',
         "MsgID": 10033,
         "Params":{"Tag1":".Cfg_Tag","Tag2":".Cfg_Desc"},
         "Severity": "TAGPATH.Cfg_WarnSeverity",
         "DataItem": "TAGPATH.Alm_Warn",
         "Enabled" : True,               
-    }, 
+    },
+    "SafetyFaultPresent":{
+        "Name": "PLCNAME_TAGNAME_Alm_SafetyInstructionFault",
+        "Type": "Tag",
+        "Style": "DiscreteTrue",
+        "Msg": 'Safety Instruction Faulted - Fault Code /*S:0%Tag1*/ Diagnostic Code /*S:0%Tag2*/',
+        "MsgID": 10040,
+        "Params":{"Tag1":".FaultCode","Tag2":".DiagnosticCode"},
+        "Cmd": "",
+        "Severity": str(SAFETY_SEVERITY),
+        "DataItem": "TAGPATH.FP",
+        "Enabled" : True,   
+    },
+    "SIF_InputDiagnosticFault":{
+        "Name": "PLCNAME_TAGNAME_SIF_InputDiagnosticFault",
+        "Type": "Tag",
+        "Style": "DiscreteFalse",
+        "Msg": 'SIF Input Diagnostic Not OK',
+        "MsgID": 10041,
+        "Params":{},
+        "Cmd": "",
+        "Severity": str(SAFETY_SEVERITY),
+        "DataItem": "TAGPATH.Sts_Diag_OK",
+        "Enabled" : True,   
+    },
+    "SIF_InputHighLimitFault":{
+        "Name": "PLCNAME_TAGNAME_SIF_InputHighLimitFault",
+        "Type": "Tag",
+        "Style": "DiscreteFalse",
+        "Msg": 'SIF Input High Limit Exceeded',
+        "MsgID": 10042,
+        "Params":{},
+        "Cmd": "",
+        "Severity": str(SAFETY_SEVERITY),
+        "DataItem": "TAGPATH.Sts_High_OK",
+        "Enabled" : True,   
+    },
+    "SIF_InputLowLimitFault":{
+        "Name": "PLCNAME_TAGNAME_SIF_InputLowLimitFault",
+        "Type": "Tag",
+        "Style": "DiscreteFalse",
+        "Msg": 'SIF Input Low Limit Exceeded',
+        "MsgID": 10043,
+        "Params":{},
+        "Cmd": "",
+        "Severity": str(SAFETY_SEVERITY),
+        "DataItem": "TAGPATH.Sts_Low_OK",
+        "Enabled" : True,   
+    },
+    "SIF_InputPVStatusFault":{
+        "Name": "PLCNAME_TAGNAME_SIF_InputPVStatusFault",
+        "Type": "Tag",
+        "Style": "DiscreteFalse",
+        "Msg": 'SIF Input PV Status NOK',
+        "MsgID": 10044,
+        "Params":{},
+        "Cmd": "",
+        "Severity": str(SAFETY_SEVERITY),
+        "DataItem": "TAGPATH.Sts_PV",
+        "Enabled" : True,   
+    },
+    "SIF_Bypassed":{
+        "Name": "PLCNAME_TAGNAME_SIF_Bypassed",
+        "Type": "Tag",
+        "Style": "DiscreteTrue",
+        "Msg": 'SIF is currently being bypassed',
+        "MsgID": 10045,
+        "Params":{},
+        "Cmd": "",
+        "Severity": str(SAFETY_SEVERITY),
+        "DataItem": "TAGPATH.Sts_Bypassed",
+        "Enabled" : True,   
+    },
+    "SIF_Active":{
+        "Name": "PLCNAME_TAGNAME_SIF_Active",
+        "Type": "Tag",
+        "Style": "DiscreteFalse",
+        "Msg": 'SIF has been activated',
+        "MsgID": 10046,
+        "Params":{},
+        "Cmd": "",
+        "Severity": str(SAFETY_SEVERITY),
+        "DataItem": "TAGPATH.Sts_OK",
+        "Enabled" : True,   
+    },
+    "SIF_OutputDiagnosticFault":{
+        "Name": "PLCNAME_TAGNAME_SIF_OutputDiagnosticFault",
+        "Type": "Tag",
+        "Style": "DiscreteFalse",
+        "Msg": 'SIF Output Diagnostic Not OK',
+        "MsgID": 10047,
+        "Params":{},
+        "Cmd": "",
+        "Severity": str(SAFETY_SEVERITY),
+        "DataItem": "TAGPATH.Sts_Diag_OK",
+        "Enabled" : True,   
+    },
+    "SIF_FinalElementActive":{
+        "Name": "PLCNAME_TAGNAME_SIF_FinalElementActive",
+        "Type": "Tag",
+        "Style": "DiscreteFalse",
+        "Msg": 'SIF Output Final Element Activated',
+        "MsgID": 10048,
+        "Params":{},
+        "Cmd": "",
+        "Severity": str(SAFETY_SEVERITY),
+        "DataItem": "TAGPATH.Sts_Safety_OK",
+        "Enabled" : True,   
+    },
 }
 
 
@@ -361,6 +503,25 @@ ALARM_DEFINITIONS = {
 # Define AOI configuration and messages
 
 AOI_CONFIG = {
+    "SIF_Input":{
+        "SIF_InputDiagnosticFault": {},
+        "SIF_InputHighLimitFault": {},
+        "SIF_InputLowLimitFault": {},
+    },
+    "SIF_Logic":{
+        "SIF_Bypassed": {},
+        "SIF_Active": {},
+    },
+    "SIF_Output":{
+        "SIF_OutputDiagnosticFault": {},
+        "SIF_FinalElementActive": {},
+    },
+    "DCI_STOP":{
+        "SafetyFaultPresent": {}
+    },
+    "CONFIGURABLE_ROUT":{
+        "SafetyFaultPresent": {}
+    },
     "L_ModuleSts":{
         "ModuleFaulted": {}
     },
